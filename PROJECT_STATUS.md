@@ -5,6 +5,93 @@
 
 ---
 
+## ✅ Sesión 8 de Abril 2026 — UI completa + Push a GitHub
+
+### Resumen
+Sesión de iteración de UI sobre el scaffold existente. Diseño final con design system, modo oscuro, jerarquía de cards, secciones de contenido y push inicial a GitHub.
+
+**GitHub:** `git@github.com:luisfm44/landed_frontend.git` — branch `main`, upstream configurado, 72 objetos pusheados.
+
+### Cambios principales
+
+#### Design System + Modo Oscuro
+- `app/globals.css` — `@theme {}` con tokens semánticos: `--color-success/light`, `--color-warning/light`, `--color-danger/light`, `--color-brand/light`, `--color-primary-light`, `--color-surface`, `--color-ld-border`, `--shadow-card`, `--shadow-elevated`.
+- `:root` overrides: `--primary: oklch(0.488 0.243 264.376)` (#2563EB), `--background: oklch(0.980 0 0)`, `--radius: 0.625rem`.
+- `.dark {}` overrides: `--background: #0B0B0C`, `--card: #111113`, `--border: #26262B`, fills translúcidos.
+- Ambient glow en `.dark body` con dos gradientes radiales.
+- `ThemeToggle` client component. `useReveal` hook para animaciones reveal-on-scroll.
+
+#### Hero (`app/page.tsx`)
+- H1: `text-[#0f172a] font-extrabold` + gradiente `from-blue-600 to-violet-600` (valores explícitos, no vars CSS).
+- Eliminado overlay `from-primary/5 to-brand/5` que lavaba el texto.
+- Hero `min-h-[80vh]` con search bar y trust text.
+
+#### Secciones de contenido (`app/page.tsx`)
+Layout de 6 secciones en orden:
+1. **Hero** — pregunta→respuesta H1, search bar, trust text
+2. **Real Example** — comparación KEF LS50 Meta: local $12.9M vs importado $8.7M
+3. **How It Works** — 3 pasos con números `text-4xl font-black text-gray-100`
+4. **Resultados** (si hay búsqueda) ó **Top Deals + All Opportunities** (default)
+5. **Value Prop** — 3 cards `bg-gray-50 dark:bg-surface/60`
+6. **CTA final** — scroll a top via `window.scrollTo`
+
+#### Card hierarchy (`components/opportunity-card.tsx`)
+Orden estricto reescrito:
+1. Precio `text-4xl font-extrabold text-[#0f172a]` + savings inline `text-success`
+2. Pill de recomendación: subasta (brand/purple) | worthImporting (success/green) | buyLocally (gray text liso)
+3. Explicación `text-sm font-semibold text-[#1e293b]` — con valor `formatUsd(savingsAmount)` o `explanation[0]`
+4. Segunda línea de explicación `text-xs text-gray-400` si existe `explanation[1]`
+5. Título `text-sm font-medium text-gray-600` tras `border-t border-ld-border`
+6. Meta `text-xs text-gray-400` — score · ofertas · marketplace
+7. Detalles de subasta — `<span>` inline liso (sin box ni borde)
+8. `pricingWarning` — `text-warning` + TriangleAlert
+
+Hover: `hover:scale-[1.02]` + `hover:shadow-elevated`.
+CTA:
+- Subasta → `"Ir a la subasta"` — `bg-primary`
+- Worth importing → `"Comprar por $X"` — `bg-primary` + glow `hover:shadow-[0_0_16px_rgba(37,99,235,0.35)]`
+- Not worth importing → `"Ver oferta"` — `bg-gray-100 text-gray-600`
+
+`border-t-2 border-t-primary` solo en top deals. Sin pill borders, sin left accent, sin emoji en etiquetas de score.
+
+#### AuctionTimer (`components/auction-timer.tsx`)
+- Fix de hidratación: `useState<number | null>(null)` (SSR y cliente ambos renderizan `null`); valor real se calcula en `useEffect`.
+- Retorna `<span>` solo (sin `<div>`, sin progress bar) — seguro dentro de `<span>` en card.
+- Color: `text-danger` (<10min) | `text-warning` (<1hr) | `text-muted-foreground` en otro caso.
+
+#### i18n (`messages/es.json` + `messages/en.json`)
+Claves añadidas bajo `"home"`:
+- `home.example.*` — sección Real Example (KEF LS50 Meta)
+- `home.howItWorks.*` — sección How It Works (3 pasos)
+- `home.valueProp.*` — sección Value Prop (3 beneficios)
+
+Claves añadidas bajo `"card"`:
+- `cheaperThanLocal`, `noLocalAdvantage`, `listingPrice`, `viewOffer`, `buyFor`, `joinAuction`
+- Sin emoji en labels de score
+
+⚠️ **Crítico**: `howItWorks` y `valueProp` DEBEN estar anidadas dentro del objeto `"home"`. Un bug previo las insertó al top-level causando `MISSING_MESSAGE`. Fix aplicado con script Python.
+
+### Bugs resueltos
+
+| Bug | Causa | Fix |
+|-----|-------|-----|
+| Hero ilegible | Overlay `from-primary/5` + variables OKLCH claras | Eliminado overlay; colores explícitos `#0f172a` y `blue-600/violet-600` |
+| Componente duplicado | `replace_string_in_file` solo reemplazó imports, dejando body antiguo | `head -n N > /tmp/clean && mv` para truncar al largo correcto |
+| Hydration mismatch en AuctionTimer | `useState(() => Date.now())` diferente en SSR y cliente | `useState<number | null>(null)` + cálculo en `useEffect` |
+| `<p>` contiene `<div>` | AuctionTimer retornaba `<div>`, colocado dentro de `<p>` | Wrapper de card cambiado a `<span>`; AuctionTimer reescrito a `<span>` |
+| MISSING_MESSAGE | `howItWorks`/`valueProp` en top-level JSON | `d["home"][key] = d.pop(key)` para ambos locales |
+
+### Estado del build
+`npm run build` → exit 0. GitHub push: 72 objetos a `main`, upstream configurado.
+
+### Pendientes (próxima sesión)
+- [ ] Conectar `app/opportunities/page.tsx` al endpoint real `GET /opportunities`
+- [ ] Reemplazar `MOCK_OPPORTUNITIES` en `app/page.tsx` con fetch real al backend
+- [ ] Modo oscuro en `SearchBar` — aún no tiene tokens `dark:`
+- [ ] Deploy a Vercel / hosting frontend
+
+---
+
 ## ✅ Sesión 8 de Abril 2026 — Frontend Scaffold (Next.js + Tailwind + shadcn/ui)
 
 ### Stack
