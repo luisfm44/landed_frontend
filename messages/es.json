@@ -1,0 +1,141 @@
+{
+  "header": {
+    "tagline": "— encuentra equipos hi-fi antes de que lleguen",
+    "opportunities": "Oportunidades"
+  },
+  "home": {
+    "hero": {
+      "titlePrefix": "¿Importar o comprar en Colombia?",
+      "titleGradient": "Te decimos qué conviene.",
+      "titleSuffix": "",
+      "subtitle": "Calculamos el costo real (envío + impuestos) y te mostramos dónde compras más barato en segundos.",
+      "trust": "Incluye impuestos, envío y comparación en tiempo real",
+      "liveUpdate": "Oportunidades actualizadas constantemente",
+      "affiliateFree": "Landed es gratis.",
+      "affiliateDisclosure": "Podemos ganar una comisión si compras a través de nuestros enlaces."
+    },
+    "example": {
+      "pill": "Ejemplo real",
+      "heading": "Así funciona Landed",
+      "subheading": "Calculamos el verdadero costo importado y lo comparamos con comprarlo aquí.",
+      "product": "KEF LS50 Meta — Bookshelf Speakers",
+      "localLabel": "En Colombia",
+      "localSource": "Tiendas locales",
+      "importLabel": "Importado (USA)",
+      "importSource": "Amazon + envío + impuestos",
+      "bestOption": "MEJOR OPCIÓN",
+      "youSave": "Ahorras $4.200.000 COP",
+      "savingsPct": "32% menos",
+      "recoBold": "Recomendación: importar.",
+      "recoDetail": "El costo total (envío + arancel + IVA) es significativamente menor que el margen local."
+    },
+    "topDeals": {
+      "heading": "Mejores ofertas",
+      "subheading": "Las mejores oportunidades ahora mismo"
+    },
+    "results": {
+      "heading": "Todas las oportunidades",
+      "subheading": "Más opciones comparadas para ti",
+      "forQuery": "Resultados para \"{query}\"",
+      "found": "{count} encontradas"
+    },
+    "howItWorks": {
+      "heading": "Cómo funciona",
+      "step1Title": "Busca el equipo",
+      "step1Desc": "Escribe el nombre del equipo que te interesa. Buscamos en Reverb, eBay y Audiogon.",
+      "step2Title": "Calculamos el costo real",
+      "step2Desc": "Sumamos el precio de origen, envío al casillero, impuestos de importación y arancel colombiano.",
+      "step3Title": "Tú decides",
+      "step3Desc": "Te mostramos el precio final en Colombia y una recomendación clara: importar o comprar aquí."
+    },
+    "valueProp": {
+      "heading": "¿Por qué Landed?",
+      "item1Title": "Costo real, no estimado",
+      "item1Desc": "Incluimos impuestos, arancel y envío. Sin sorpresas al llegar.",
+      "item2Title": "Comparación directa",
+      "item2Desc": "Ponemos el precio importado al lado del precio local para que la decisión sea obvia.",
+      "item3Title": "Solo lo que vale la pena",
+      "item3Desc": "Filtramos por score mínimo. Si no conviene importar, te lo decimos antes de que pierdas tiempo.",
+      "cta": "Buscar equipos"
+    }
+  },
+  "search": {
+    "placeholder": "Busca equipos hi-fi (ej. KEF R3, McIntosh MA352)...",
+    "button": "Buscar",
+    "searching": "Buscando...",
+    "ariaLabel": "Buscar equipos"
+  },
+  "card": {
+    "finalPrice": "Precio final en Colombia",
+    "worthImporting": "Mejor importar",
+    "buyLocally": "Mejor comprar localmente",
+    "recommended": "Recomendado por Landed",
+    "fomoWatching": "🔥 Otros usuarios están viendo esto",
+    "fomoDisappear": "⚡ Puede desaparecer pronto",
+    "urgencyLimited": "⚡ Oportunidad limitada",
+    "urgencyAuction": "⏳ Puede subir en cualquier momento",
+    "scoreExcellent": "Score {score}/100",
+    "scoreGood": "Score {score}/100",
+    "scoreFair": "Score {score}/100",
+    "offersLabel": "+{count} ofertas",
+    "shipsToCol": "Envia a Colombia",
+    "comparedLocal": "Comparado con el mercado local",
+    "multipleOffers": "Multiples ofertas disponibles",
+    "buyOn": "Comprar ahora en {marketplace} →",
+    "viewOffer": "Ver oferta ahora →",
+    "externalStore": "Serás redirigido a la tienda oficial",
+    "topDealToday": "Mejor oportunidad hoy",
+    "currentBid": "Oferta actual",
+    "estimatedFinal": "Final estimado",
+    "priceCanRise": "Puede subir",
+    "timeLeft": "restante",
+    "couldWinFor": "Podrías ganarlo por",
+    "auctionUrgency": "Si esperas, el precio puede subir",
+    "auctionTip": "Si estás interesado, entra ahora y guarda la subasta.",
+    "joinAuction": "Ir a la subasta",
+    "buyFor": "Comprar por {price}",
+    "auctionEnded": "Finalizada",
+    "auction": "Subasta",
+    "scoreTip": "Puntaje de compra (0-100)",
+    "savingsLabel": "Ahorras {pct}%",
+    "listingPrice": "Precio en origen",
+    "cheaperThanLocal": "{amount} más barato que comprarlo aquí",
+    "noLocalAdvantage": "Precio similar al mercado local"
+  },
+  "opportunities": {
+    "title": "Oportunidades",
+    "description": "Ofertas en tiempo real de Reverb, eBay y Audiogon — actualizadas continuamente.",
+    "placeholder": "Conectar el endpoint /opportunities del backend aqui."
+  },
+  "footer": {
+    "copyright": "© {year} Landed. Landed es gratuito. Podemos ganar una comision si compras a traves de nuestros enlaces (sin costo adicional para ti)."
+  },
+  "meta": {
+    "homeTitle": "Landed — Encuentra Equipos Hi-Fi",
+    "homeDescription": "Descubre ofertas de equipos de audio hi-fi en marketplaces de EE. UU. y comparalas con precios locales.",
+    "opportunitiesTitle": "Oportunidades — Landed",
+    "opportunitiesDescription": "Explora todas las oportunidades actuales de equipos hi-fi."
+  },
+  "mockData": {
+    "kef": {
+      "exp0": "Ahorro del 32% frente al precio local",
+      "exp1": "Alta oportunidad de compra"
+    },
+    "mcintosh": {
+      "exp0": "Ahorro del 28% frente al precio local"
+    },
+    "technics": {
+      "exp0": "Ahorro del 41% frente al precio local",
+      "exp1": "Alta oportunidad de compra",
+      "exp2": "Multiples opciones disponibles"
+    },
+    "focal": {
+      "exp0": "Solo 8% de ahorro — por debajo del umbral recomendado",
+      "exp1": "Considera comprar localmente"
+    },
+    "denon": {
+      "exp0": "Ahorro del 24% frente al precio local",
+      "exp1": "Buena oportunidad de gama media"
+    }
+  }
+}

@@ -49,7 +49,7 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.976 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -72,7 +72,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -83,38 +83,127 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/**
+ * ── Landed Dark Mode ─────────────────────────────────────────────────────────
+ *
+ * Philosophy: glass + depth + calm. Not pure black, not neon.
+ * Layered depth: background (#0B0B0C) → surface (#111113) → elevated (#1A1A1D)
+ *
+ * All Landed semantic tokens are overridden here so bg-success, text-brand, etc.
+ * automatically pick up dark values — no dark: prefixes needed for color semantics.
+ * dark: prefixes are only used for structural effects (backdrop-blur, gradients, glows).
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* ── shadcn base overrides ── */
+  --background: #0B0B0C;           /* near-black — pure #000 reads as broken */
+  --foreground: #F5F5F7;           /* Apple's "almost white" — softer than pure white */
+  --card: #111113;                 /* surface layer: 1 step above background */
+  --card-foreground: #F5F5F7;
+  --popover: #1A1A1D;
+  --popover-foreground: #F5F5F7;
+  --border: #26262B;               /* visible but not harsh */
+  --input: #26262B;
+  --muted: #1A1A1D;
+  --muted-foreground: #A1A1AA;     /* zinc-400 — legible, not washed out */
+  --accent: #1A1A1D;
+  --accent-foreground: #F5F5F7;
+  --destructive: oklch(0.637 0.237 25.331);
+  --ring: #3B82F6;                 /* blue focus ring — consistent with primary */
+  --sidebar: #111113;
+  --sidebar-foreground: #F5F5F7;
+  --sidebar-border: #26262B;
+
+  /* ── primary: blue stays blue in dark (not gray like shadcn default) ── */
+  /* Slightly lighter (blue-400 range) so it reads well on dark surface     */
+  --primary: oklch(0.578 0.243 264.376);   /* #3B82F6 blue-500 */
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: #1A1A1D;
+  --secondary-foreground: #F5F5F7;
+
+  /* ── Landed semantic token overrides ── */
+  /* Less saturated than light mode — avoids neon effect on dark backgrounds */
+  --color-success: #22c55e;                 /* green-500 (lighter than light mode's 600) */
+  --color-success-light: rgba(34, 197, 94, 0.12);  /* translucent fill, not solid */
+
+  --color-warning: #f59e0b;                 /* amber-500 */
+  --color-warning-light: rgba(245, 158, 11, 0.12);
+
+  --color-danger: #ef4444;                  /* red-500 */
+  --color-danger-light: rgba(239, 68, 68, 0.12);
+
+  /* brand: lighter purple so it glows rather than muddles */
+  --color-brand: #a78bfa;                   /* violet-400 */
+  --color-brand-light: rgba(139, 92, 246, 0.15);
+
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+
+  /* surface + border: match the depth system */
+  --color-surface: #111113;
+  --color-ld-border: #26262B;
+
+  /* ── Deeper shadows — darkness amplifies perceived depth ── */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/**
+ * ── Landed Design System ────────────────────────────────────────────────────
+ *
+ * These tokens extend (not replace) shadcn's system.
+ * Source of truth: lib/tokens.ts — values must stay in sync.
+ *
+ * Generates Tailwind utilities:
+ *   bg-success, text-success, border-success
+ *   bg-success-light, bg-warning-light, bg-danger-light
+ *   bg-brand, text-brand, bg-brand-light
+ *   bg-primary-light
+ *   shadow-card, shadow-elevated
+ *
+ * @theme (no inline) — exposed as CSS custom properties AND generates utilities.
+ * This allows runtime inspection and future theming.
+ */
+@theme {
+  /* ── Semantic state colors ─── */
+  --color-success: #16a34a;       /* savings confirmed, worth importing */
+  --color-success-light: #dcfce7; /* subtle fill for success states */
+
+  --color-warning: #d97706;       /* amber-600 — accessible on white bg */
+  --color-warning-light: #fef3c7;
+
+  --color-danger: #dc2626;        /* not worth importing */
+  --color-danger-light: #fee2e2;
+
+  /* ── Brand — auction / special ─── */
+  --color-brand: #7c3aed;         /* purple — auctions only, not general CTA */
+  --color-brand-light: #ede9fe;
+
+  /* ── Primary fill ─── */
+  --color-primary-light: #dbeafe; /* blue-100 fill for chips/pills */
+
+  /* ── Surface / border ─── */
+  --color-surface: #ffffff;
+  --color-ld-border: #e5e7eb;
+
+  /* ── Elevation shadows ─── */
+  /* card: default resting shadow — reads as solid without being heavy */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.06);
+  /* elevated: hover state — clear lift without floating off the page */
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/**
+ * ── Override shadcn :root defaults ──────────────────────────────────────────
+ *
+ * --primary overridden to Landed blue so shadcn Button (bg-primary) is blue
+ * without any class changes to the Button component.
+ * Using oklch for perceptual consistency with the rest of the palette.
+ */
+:root {
+  --primary: oklch(0.488 0.243 264.376);   /* #2563EB — Landed action blue */
+  --primary-foreground: oklch(0.985 0 0);  /* white — readable on blue */
+  --background: oklch(0.980 0 0);          /* #FAFAFA — slightly warm white */
+  --radius: 0.625rem;                      /* 10px base — tighter than shadcn default */
 }
 
 @layer base {
@@ -126,5 +215,15 @@
   }
   html {
     @apply font-sans;
+  }
+  /**
+   * Dark ambient glow — very subtle radial gradients at the corners.
+   * Gives the page depth and a sense that something is "on" behind it.
+   * Invisible in light mode (inherits transparent body bg).
+   */
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 110%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
   }
 }
