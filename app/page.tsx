@@ -120,9 +120,9 @@ export default function Home() {
         creating a clear two-act UX: understand → search → browse.
         Overflow-hidden clips the gradient overlay to the section boundary.
       */}
-      <section className="relative min-h-[80vh] flex flex-col items-center justify-center text-center overflow-hidden pb-10">
+      <section className="relative py-24 flex flex-col items-center text-center overflow-hidden">
         <div className="relative z-10 w-full max-w-3xl mx-auto">
-          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-[#0f172a] dark:text-foreground mb-6 leading-[1.1]">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6 leading-[1.1]">
             {t("hero.titlePrefix")}
             <br className="hidden sm:block" />
             {" "}
@@ -131,7 +131,7 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="max-w-xl mx-auto text-lg text-[#374151] dark:text-muted-foreground mb-10 leading-relaxed">
+          <p className="max-w-xl mx-auto text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
             {t("hero.subtitle")}
           </p>
 
@@ -145,12 +145,12 @@ export default function Home() {
             Close proximity to the input answers the hesitation moment:
             "what does this actually calculate?" — answered before they click.
           */}
-          <p className="mt-3 text-xs text-[#6b7280] dark:text-muted-foreground/60">
+          <p className="mt-3 text-xs text-gray-600 dark:text-gray-400">
             {t("hero.trust")}
           </p>
 
-          <p className="mt-10 text-xs text-[#9ca3af] dark:text-muted-foreground/40">
-            <span className="font-medium text-[#6b7280] dark:text-muted-foreground/60">
+          <p className="mt-10 text-xs text-gray-400 dark:text-gray-500">
+            <span className="font-medium text-gray-600 dark:text-gray-400">
               {t("hero.affiliateFree")}
             </span>
             {" "}{t("hero.affiliateDisclosure")}
@@ -168,20 +168,20 @@ export default function Home() {
             </svg>
             {t("example.pill")}
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-foreground">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             {t("example.heading")}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-muted-foreground mt-2.5 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2.5 max-w-md mx-auto leading-relaxed">
             {t("example.subheading")}
           </p>
         </div>
 
         {/* Comparison card */}
         <div className="max-w-xl mx-auto">
-          <div className="rounded-2xl border border-ld-border bg-white shadow-elevated overflow-hidden dark:bg-surface/60 dark:backdrop-blur-xl">
+          <div className="bg-white dark:bg-[#111113] border border-gray-200 dark:border-[#26262B] rounded-2xl shadow-md overflow-hidden">
 
             {/* Product header */}
-            <div className="px-6 py-5 border-b border-ld-border flex items-center gap-3">
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-[#26262B] flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
                 {/* Speaker icon */}
                 <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -189,26 +189,26 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground/60 uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                   {t("example.pill")}
                 </p>
-                <h3 className="text-base font-bold text-gray-900 dark:text-foreground leading-tight">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
                   {t("example.product")}
                 </h3>
               </div>
             </div>
 
             {/* Price comparison — two columns */}
-            <div className="grid grid-cols-2 divide-x divide-ld-border">
+            <div className="grid grid-cols-2 divide-x divide-gray-200 dark:divide-[#26262B]">
               {/* Local (Colombia) */}
               <div className="px-6 py-6">
-                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground/60 uppercase tracking-widest mb-2">
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
                   {t("example.localLabel")}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground tabular-nums">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
                   $12.9M
                 </p>
-                <p className="text-xs text-gray-400 dark:text-muted-foreground/60 mt-1.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
                   {t("example.localSource")}
                 </p>
               </div>
@@ -218,13 +218,13 @@ export default function Home() {
                 <span className="absolute top-3 right-3 text-[9px] font-bold text-success bg-success/15 dark:bg-success/20 px-2 py-0.5 rounded-full ring-1 ring-success/20 leading-none">
                   {t("example.bestOption")}
                 </span>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground/60 uppercase tracking-widest mb-2">
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
                   {t("example.importLabel")}
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-success tabular-nums">
                   $8.7M
                 </p>
-                <p className="text-xs text-gray-400 dark:text-muted-foreground/60 mt-1.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
                   {t("example.importSource")}
                 </p>
               </div>
@@ -247,8 +247,8 @@ export default function Home() {
               <svg className="w-4 h-4 text-success shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-sm text-gray-500 dark:text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-gray-900 dark:text-foreground">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {t("example.recoBold")}
                 </span>
                 {" "}
@@ -261,9 +261,9 @@ export default function Home() {
 
       {/* ── How It Works — 3 steps ──────────────────────────── */}
       {/* Static section — always visible. Builds trust before deals appear. */}
-      <section className="py-16 sm:py-20 border-t border-ld-border">
+      <section className="py-16 sm:py-20 border-t border-gray-200 dark:border-[#26262B]">
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f172a] dark:text-foreground">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             {t("howItWorks.heading")}
           </h2>
         </div>
@@ -275,13 +275,13 @@ export default function Home() {
           ].map(({ num, titleKey, descKey }) => (
             <div key={num} className="flex flex-col gap-3">
               {/* Step number — large, muted; acts as visual anchor without competing with text */}
-              <span className="text-4xl font-black text-gray-100 dark:text-white/8 leading-none select-none">
+              <span className="text-4xl font-black text-gray-200 dark:text-gray-700 leading-none select-none">
                 {num}
               </span>
-              <h3 className="text-base font-bold text-[#0f172a] dark:text-foreground">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
                 {t(titleKey as Parameters<typeof t>[0])}
               </h3>
-              <p className="text-sm text-gray-500 dark:text-muted-foreground leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 {t(descKey as Parameters<typeof t>[0])}
               </p>
             </div>
@@ -292,10 +292,10 @@ export default function Home() {
       {results !== null ? (
         <section className="pb-20">
           <div className="flex items-baseline justify-between mb-8">
-            <h2 className="text-sm font-semibold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
+            <h2 className="text-sm font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">
               {t("results.forQuery", { query })}
             </h2>
-            <span className="text-xs text-gray-400 dark:text-muted-foreground/70">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               {t("results.found", { count: results.length })}
             </span>
           </div>
@@ -324,10 +324,10 @@ export default function Home() {
                     : "opacity-0 translate-y-3"
                 )}
               >
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-foreground">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                   {t("topDeals.heading")}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-muted-foreground mt-1.5">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">
                   {t("topDeals.subheading")}
                 </p>
               </div>
@@ -362,7 +362,7 @@ export default function Home() {
               {/* Section header fades in immediately; cards stagger with 100ms spacing */}
               <div
                 className={cn(
-                  "border-t border-gray-200 dark:border-ld-border pt-10 mb-8",
+                  "border-t border-gray-200 dark:border-[#26262B] pt-10 mb-8",
                   "transition-all duration-500 ease-out",
                   allOppsReveal.visible
                     ? "opacity-100 translate-y-0"
@@ -371,14 +371,14 @@ export default function Home() {
               >
                 <div className="flex items-end justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground tracking-tight">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                       {t("results.heading")}
                     </h2>
-                    <p className="text-sm text-gray-500 dark:text-muted-foreground mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {t("results.subheading")}
                     </p>
                   </div>
-                  <span className="text-xs text-gray-400 dark:text-muted-foreground/70 shrink-0">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
                     {t("results.found", { count: otherOpportunities.length })}
                   </span>
                 </div>
@@ -408,9 +408,9 @@ export default function Home() {
 
           {/* ── Value Proposition ──────────────────────────────── */}
           {/* Final conversion layer before page ends — answers "why trust Landed?" */}
-          <section className="py-16 sm:py-20 border-t border-ld-border">
+          <section className="py-16 sm:py-20 border-t border-gray-200 dark:border-[#26262B]">
             <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f172a] dark:text-foreground">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                 {t("valueProp.heading")}
               </h2>
             </div>
@@ -420,11 +420,11 @@ export default function Home() {
                 { titleKey: "valueProp.item2Title", descKey: "valueProp.item2Desc" },
                 { titleKey: "valueProp.item3Title", descKey: "valueProp.item3Desc" },
               ].map(({ titleKey, descKey }) => (
-                <div key={titleKey} className="rounded-xl bg-gray-50 dark:bg-surface/60 dark:border dark:border-ld-border p-6">
-                  <h3 className="text-sm font-bold text-[#0f172a] dark:text-foreground mb-2">
+                <div key={titleKey} className="bg-white dark:bg-[#111113] border border-gray-200 dark:border-[#26262B] rounded-xl p-6 shadow-md">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
                     {t(titleKey as Parameters<typeof t>[0])}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                     {t(descKey as Parameters<typeof t>[0])}
                   </p>
                 </div>
@@ -434,7 +434,7 @@ export default function Home() {
             <div className="text-center mt-10">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="inline-flex items-center gap-2 bg-primary text-white rounded-xl px-6 py-3 text-sm font-semibold hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(37,99,235,0.35)] transition-all duration-200"
+                className="inline-flex items-center gap-2 bg-primary text-white rounded-xl px-6 py-3 text-sm font-semibold hover:bg-primary/90 hover:shadow-lg hover:shadow-[0_0_16px_rgba(37,99,235,0.35)] transition-all duration-200"
               >
                 {t("valueProp.cta")}
               </button>

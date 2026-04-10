@@ -55,25 +55,24 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
   return (
     <Card
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-xl border border-ld-border bg-surface shadow-card",
-        "dark:bg-surface/80 dark:backdrop-blur-xl",
+        "relative flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-[#26262B] bg-white dark:bg-[#111113] shadow-md",
         "transition-all duration-300 ease-out cursor-pointer",
-        "hover:shadow-elevated hover:scale-[1.02]",
+        "hover:shadow-lg hover:scale-[1.02]",
         "dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]" ,
         // Top deals only get a thin top accent — one edge, not the full left border
-        isTopDeal && "border-t-2 border-t-primary"
+        isTopDeal && "border-t-2 border-t-primary border-gray-200 dark:border-[#26262B]"
       )}
     >
       <CardContent className="flex flex-col gap-4 flex-1 px-5 pt-5 pb-4">
 
         {/* ── 1. PRICE + SAVINGS ─────────────────────────────────── */}
         <div>
-          <span className="text-4xl font-extrabold text-[#0f172a] dark:text-foreground tracking-tight leading-none">
+          <span className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-none">
             {formatUsd(landedPrice)}
           </span>
           {savingsPct > 0 && (
             <p className="mt-1.5 text-sm font-medium text-success">
-              {t("savingsLabel", { pct: savingsPct })} · <span className="text-gray-400 dark:text-muted-foreground/60 font-normal line-through">{formatUsd(price)}</span>
+              {t("savingsLabel", { pct: savingsPct })} · <span className="text-gray-400 dark:text-gray-500 font-normal line-through">{formatUsd(price)}</span>
             </p>
           )}
         </div>
@@ -89,31 +88,31 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
             {t("worthImporting")}
           </span>
         ) : (
-          <span className="inline-flex w-fit text-xs font-semibold text-gray-400 dark:text-muted-foreground/70 rounded-md px-0 py-0.5">
+          <span className="inline-flex w-fit text-xs font-semibold text-gray-400 dark:text-gray-500 rounded-md px-0 py-0.5">
             {t("buyLocally")}
           </span>
         )}
 
         {/* ── 3. EXPLANATION ────────────────────────────────────── */}
-        <p className="text-sm text-[#374151] dark:text-foreground/80 leading-snug -mt-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug -mt-1">
           {primaryExplanation}
         </p>
 
         {explanation && explanation.length > 1 && (
-          <p className="text-xs text-gray-400 dark:text-muted-foreground leading-relaxed -mt-2">
+          <p className="text-xs text-gray-400 dark:text-gray-400 leading-relaxed -mt-2">
             {explanation[1]}
           </p>
         )}
 
         {/* ── 4. TITLE ──────────────────────────────────────────── */}
-        <div className="pt-2 border-t border-ld-border">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-muted-foreground leading-snug line-clamp-2">
+          <div className="pt-2 border-t border-gray-200 dark:border-[#26262B]">
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug line-clamp-2">
             {title}
           </h3>
         </div>
 
         {/* ── 5. META ───────────────────────────────────────────── */}
-        <p className="text-xs text-gray-400 dark:text-muted-foreground/60 -mt-2">
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">
           {scoreLabel}
           {listingsCount !== undefined && listingsCount > 0 && (
             <> · {t("offersLabel", { count: listingsCount })}</>
@@ -125,17 +124,17 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
         {isAuction && (
           <div className="space-y-1.5 pt-1">
             {currentBid !== undefined && (
-              <p className="text-xs text-gray-500 dark:text-muted-foreground">
-                {t("currentBid")}: <span className="font-semibold text-gray-700 dark:text-foreground">{formatUsd(currentBid)}</span>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {t("currentBid")}: <span className="font-semibold text-gray-900 dark:text-white">{formatUsd(currentBid)}</span>
               </p>
             )}
             {estimatedFinalPrice !== undefined && (
-              <p className="text-xs text-gray-500 dark:text-muted-foreground">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 {t("couldWinFor")}: <span className="font-semibold text-brand">{formatUsd(estimatedFinalPrice)}</span>
               </p>
             )}
             {auctionEndsAt && (
-              <span className="text-xs text-gray-400 dark:text-muted-foreground/60 flex items-center gap-1">
+              <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                 <Timer className="h-3 w-3 shrink-0" />
                 <AuctionTimer
                   endsAt={auctionEndsAt}

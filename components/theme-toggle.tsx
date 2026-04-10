@@ -56,12 +56,9 @@ export function ThemeToggle() {
           isDark ? "translate-x-7" : "translate-x-0"
         )}
       >
-        {/* Icon shows the CURRENT mode — user understands what they're switching from */}
-        {isDark ? (
-          <Moon className="h-3 w-3 text-white" />
-        ) : (
-          <Sun className="h-3 w-3 text-amber-500" />
-        )}
+        {/* CSS dark: variants drive visibility — no JS state, no SSR/client mismatch */}
+        <Moon className="absolute h-3 w-3 text-white transition-opacity duration-200 opacity-0 dark:opacity-100" aria-hidden="true" />
+        <Sun className="absolute h-3 w-3 text-amber-500 transition-opacity duration-200 opacity-100 dark:opacity-0" aria-hidden="true" />
       </span>
     </button>
   );

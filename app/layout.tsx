@@ -54,7 +54,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-white dark:bg-[#0B0B0C] text-gray-900 dark:text-white">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>
             <Header />
