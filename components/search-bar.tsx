@@ -40,7 +40,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
       </div>
       <button
         type="submit"
-        className="h-12 px-6 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:scale-[1.02] transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none shrink-0"
+        className="h-12 px-6 rounded-xl text-sm font-semibold bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:shadow-[0_0_20px_rgba(37,99,235,0.25)] hover:scale-[1.02] transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none shrink-0"
         disabled={isLoading || !query.trim()}
       >
         {isLoading ? t("searching") : t("button")}

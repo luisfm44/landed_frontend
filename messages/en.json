@@ -57,6 +57,9 @@
       "item3Title": "Only what's worth it",
       "item3Desc": "We filter by minimum score. If importing doesn't make sense, we tell you before you waste time.",
       "cta": "Search gear"
+    },
+    "search": {
+      "sectionHeading": "Search for your gear"
     }
   },
   "search": {
@@ -81,8 +84,9 @@
     "shipsToCol": "Ships to Colombia",
     "comparedLocal": "Compared to local market",
     "multipleOffers": "Multiple offers available",
-    "buyOn": "Buy now on {marketplace} →",
-    "viewOffer": "View offer now →",
+    "buyOn": "Buy on {marketplace}",
+    "joinAuctionOn": "Join auction on {marketplace}",
+    "viewOffer": "View offer",
     "externalStore": "You'll be redirected to the official store",
     "topDealToday": "Best deal today",
     "currentBid": "Current bid",

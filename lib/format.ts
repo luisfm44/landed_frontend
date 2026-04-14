@@ -11,15 +11,27 @@ export function formatUsd(amount: number, decimals = 0): string {
 }
 
 /**
- * Format a Colombian Peso amount.
+ * Approximate display-only exchange rate (COP per USD).
+ * Used for converting USD prices to COP for Colombian users.
+ * NOT used for financial calculations — backend provides accurate rates.
+ */
+export const USD_TO_COP = 4100;
+
+/** Convert a USD amount to COP using the display exchange rate. */
+export function usdToCop(usd: number): number {
+  return Math.round(usd * USD_TO_COP);
+}
+
+/**
+ * Format a Colombian Peso amount in the local format: $6.200.000 COP.
+ * Primary display currency for Colombian users.
  */
 export function formatCop(amount: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
+  const formatted = new Intl.NumberFormat("es-CO", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+  return `$${formatted} COP`;
 }
 
 /**

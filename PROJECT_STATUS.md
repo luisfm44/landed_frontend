@@ -1,6 +1,6 @@
 # Estado del Proyecto - Landed (Backend + Frontend)
 
-**Fecha:** 8 de Abril de 2026
+**Fecha:** 13 de Abril de 2026
 **Backend URL:** `https://landed-api-staging-575929073955.us-central1.run.app`
 
 ---
@@ -87,10 +87,67 @@ Claves añadidas bajo `"card"`:
 ### Pendientes (próxima sesión)
 - [ ] Conectar `app/opportunities/page.tsx` al endpoint real `GET /opportunities`
 - [ ] Reemplazar `MOCK_OPPORTUNITIES` en `app/page.tsx` con fetch real al backend
-- [ ] Modo oscuro en `SearchBar` — aún no tiene tokens `dark:`
 - [ ] Deploy a Vercel / hosting frontend
 
 ---
+
+## ✅ Sesión 13 de Abril 2026 — Redesign premium + flujo UX correcto
+
+### Resumen
+Refactor completo de UI: diseño premium (Linear / Stripe / Apple), moneda COP como principal, jerarquía de cards reescrita, y flujo de landing reorganizado (explicar antes de pedir acción).
+
+### Cambios principales
+
+#### `lib/format.ts`
+- Añadido `USD_TO_COP = 4100` (constante de display, no financiera)
+- Añadido `usdToCop(usd: number): number` — conversión a COP para display
+- Reescrito `formatCop()` → produce formato `$6.314.000 COP` (locale `es-CO` + label explícito)
+
+#### `components/opportunity-card.tsx` — jerarquía reescrita
+Orden estricto nuevo:
+1. **Badge row** — pill de decisión (verde/morado/gris) + timer de subasta o marketplace label a la derecha
+2. **Precio en COP** — `text-[2.25rem] font-extrabold` como dato primario; `~$X USD` pequeño como referencia
+3. **Ahorro** — `$X.XXX.XXX COP menos · XX% · vs $X.XXX.XXX COP local`
+4. **Explicación** — una línea de contexto
+5. **Título de producto** tras `border-t` + meta (score · ofertas · marketplace)
+6. **CTA** — "Comprar en Reverb" / "Ir a la subasta en eBay"
+
+Subastas: precio principal = oferta actual en COP. "Podrías ganarlo por $X COP" debajo del bid.  
+Botones: `bg-[#2563EB] hover:bg-[#1D4ED8]` con glow sutil. Botón secundario: gris muted sin glow.
+
+#### `components/search-bar.tsx`
+- Botón: `bg-blue-600 hover:bg-blue-700` → `bg-[#2563EB] hover:bg-[#1D4ED8]` + glow en hover
+
+#### `app/page.tsx` — flujo de página reorganizado
+Nuevo orden (Tipo B — producto nuevo, explicar antes de actuar):
+1. **Hero** — headline + subtítulo + aviso afiliado (sin input). Fondo con glow blob (`blur-3xl`) + gradiente `from-blue-50/50 to-transparent`
+2. **Cómo funciona** — 3 pasos 01/02/03 (paso al top, usuario entiende el producto)
+3. **Ejemplo real** — comparación KEF LS50 Meta en sección con `bg-gray-50 dark:bg-[#0E0E10]` (capa de profundidad)
+4. **Search section dedicada** — heading + trust text encima + SearchBar
+5. **Cards** — Top Deals → All Opportunities → Value Prop
+
+Números de pasos: `text-gray-400 dark:text-gray-600` (visible pero sutil).  
+Icono del ejemplo: referencias a `bg-primary` → `bg-[#2563EB]/10` (hex directo, consistente con botones).
+
+#### `messages/en.json` + `messages/es.json`
+- `home.search.sectionHeading` — heading de la sección de búsqueda
+- `card.joinAuctionOn` — "Join auction on {marketplace}" / "Ir a la subasta en {marketplace}"
+- `card.buyOn` — simplificado: "Buy on {marketplace}" / "Comprar en {marketplace}" (sin flecha inline)
+- `card.viewOffer` — sin flecha inline (la provee el ícono `ExternalLink`)
+
+### Bugs resueltos
+
+| Bug | Causa | Fix |
+|-----|-------|-----|
+| `MISSING_MESSAGE card.joinAuctionOn` | JSON hot-reload no detecta cambios en dev | Restart limpio con `rm -rf .next` |
+| `MISSING_MESSAGE home.search.sectionHeading` | Clave bajo top-level `"search"` en lugar de `"home.search"` | Movida al objeto `"home"` en ambos locales |
+
+### Estado del build
+Sin errores TypeScript. JSON válido en ambos locales. Servidor dev en `localhost:3000`.
+
+---
+
+
 
 ## ✅ Sesión 8 de Abril 2026 — Frontend Scaffold (Next.js + Tailwind + shadcn/ui)
 

@@ -57,6 +57,9 @@
       "item3Title": "Solo lo que vale la pena",
       "item3Desc": "Filtramos por score mínimo. Si no conviene importar, te lo decimos antes de que pierdas tiempo.",
       "cta": "Buscar equipos"
+    },
+    "search": {
+      "sectionHeading": "Busca tu equipo"
     }
   },
   "search": {
@@ -81,8 +84,9 @@
     "shipsToCol": "Envia a Colombia",
     "comparedLocal": "Comparado con el mercado local",
     "multipleOffers": "Multiples ofertas disponibles",
-    "buyOn": "Comprar ahora en {marketplace} →",
-    "viewOffer": "Ver oferta ahora →",
+    "buyOn": "Comprar en {marketplace}",
+    "joinAuctionOn": "Ir a la subasta en {marketplace}",
+    "viewOffer": "Ver oferta",
     "externalStore": "Serás redirigido a la tienda oficial",
     "topDealToday": "Mejor oportunidad hoy",
     "currentBid": "Oferta actual",
