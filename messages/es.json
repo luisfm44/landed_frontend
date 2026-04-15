@@ -59,7 +59,8 @@
       "cta": "Buscar equipos"
     },
     "search": {
-      "sectionHeading": "Busca tu equipo"
+      "sectionHeading": "Busca tu equipo",
+      "sectionSubheading": "Incluye impuestos, envío y comparación en tiempo real"
     }
   },
   "search": {

@@ -4,9 +4,11 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Opportunity } from "@/types/opportunity";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ExternalLink, Gavel, Timer, TriangleAlert, TrendingDown } from "lucide-react";
+import { ExternalLink, Timer, TriangleAlert } from "lucide-react";
 import { formatUsd, formatCop, usdToCop } from "@/lib/format";
 import { AuctionTimer } from "@/components/auction-timer";
+import { ScoreBar } from "@/components/ui/score-bar";
+import { generateInsight } from "@/lib/score";
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -23,6 +25,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
 
   const {
     title,
+    price,
     landedPrice,
     savingsPercentage,
     score,
@@ -35,6 +38,8 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
     estimatedFinalPrice,
     explanation,
     marketplace,
+    condition,
+    location,
   } = opportunity;
 
   const worthImporting = opportunity.worthImporting ?? score >= 65;
@@ -75,136 +80,149 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
       : t("viewOffer")
     : t("viewOffer");
 
+  const smartBadge = generateInsight(opportunity, copSavings, marketplaceLabel);
+
   return (
     <Card
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-2xl",
-        "border border-gray-200 dark:border-[#26262B]",
+        "group relative flex flex-col overflow-hidden rounded-2xl",
+        isTopDeal
+          ? "border-2 border-[#2563EB]/40 dark:border-[#2563EB]/30"
+          : "border border-[#E2E8F0] dark:border-[#26262B]",
         "bg-white dark:bg-[#111113]",
-        "transition-all duration-300 ease-out cursor-pointer",
-        "hover:shadow-lg hover:-translate-y-0.5",
-        "dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]",
-        isTopDeal && "border-t-2 border-t-[#2563EB]"
+        isTopDeal
+          ? "shadow-[0_4px_24px_rgba(37,99,235,0.15)] dark:shadow-[0_4px_24px_rgba(37,99,235,0.08)]"
+          : "shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_1px_#26262B]",
+        "transition-all duration-300 ease-out cursor-pointer will-change-transform",
+        "hover:-translate-y-1 hover:scale-[1.01] active:scale-[0.995] active:duration-100",
+        worthImporting && !isAuction
+          ? "hover:shadow-[0_10px_40px_rgba(37,99,235,0.15)]"
+          : "hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)]",
+        "dark:hover:shadow-[0_0_0_1px_#3F3F46,0_12px_40px_rgba(0,0,0,0.6)]",
       )}
     >
-      <CardContent className="flex flex-col gap-4 flex-1 px-5 pt-5 pb-4">
+      {/* ── "Mejor opción" badge ─────────────────────────────────── */}
+      {isTopDeal && (
+        <div className="absolute top-4 right-4 z-10 bg-[#2563EB] text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
+          Mejor opción
+        </div>
+      )}
 
-        {/* ── 1. BADGE ROW ──────────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-2 min-h-[26px]">
-          {isAuction ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-violet-500 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-500/15 rounded-full px-2.5 py-1 ring-1 ring-violet-500/20">
-              <Gavel className="h-3 w-3" />
-              {t("auction")}
-            </span>
-          ) : worthImporting ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full px-2.5 py-1 ring-1 ring-emerald-500/20">
-              <TrendingDown className="h-3 w-3" />
-              {t("worthImporting")}
-            </span>
-          ) : (
-            <span className="inline-flex items-center text-[11px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/[0.05] rounded-full px-2.5 py-1 ring-1 ring-gray-200 dark:ring-white/10">
-              {t("buyLocally")}
-            </span>
+      <CardContent className="flex flex-col flex-1 px-5 pt-5 pb-4">
+
+        {/* ── 1. HEADER: title + meta ───────────────────────────────── */}
+        <div className={cn("flex flex-col gap-1", isTopDeal && "pr-[104px]")}>
+          {(marketplaceLabel || condition || location) && (
+            <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider leading-none">
+              {[marketplaceLabel, condition, location].filter(Boolean).join(" · ")}
+            </p>
           )}
-
-          {/* Timer slot for auctions, marketplace tag for fixed */}
-          {isAuction && auctionEndsAt ? (
-            <span className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500">
-              <Timer className="h-3 w-3 shrink-0" />
-              <AuctionTimer
-                endsAt={auctionEndsAt}
-                timeLeftLabel={t("timeLeft")}
-                endedLabel={t("auctionEnded")}
-              />
-            </span>
-          ) : marketplaceLabel ? (
-            <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              {marketplaceLabel}
-            </span>
-          ) : null}
+          <h3 className="text-sm font-semibold text-[#0F172A] dark:text-[#F5F5F7] leading-snug line-clamp-2">
+            {title}
+          </h3>
+          {listingsCount !== undefined && listingsCount > 1 && (
+            <p className="text-[10px] text-[#94A3B8]">
+              {t("offersLabel", { count: listingsCount })}
+            </p>
+          )}
         </div>
 
-        {/* ── 2. PRICE BLOCK (COP PRIMARY) ──────────────────────────── */}
-        {isAuction && copCurrentBid !== undefined ? (
-          <div className="space-y-1">
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              {t("currentBid")}
+        <div className="mt-4 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
+
+        {/* ── 2. SCORE + BADGE ──────────────────────────────────────── */}
+        <div className="mt-4 flex flex-col gap-3">
+          <ScoreBar score={score} />
+
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className={cn(
+              "inline-flex items-center gap-1 text-[11px] font-semibold rounded-full px-2.5 py-1 ring-1 transition-shadow",
+              smartBadge.className,
+              smartBadge.glow
+            )}>
+              {smartBadge.label}
+            </span>
+
+            {isAuction && auctionEndsAt && (
+              <span className="flex items-center gap-1 text-[11px] text-[#94A3B8]">
+                <Timer className="h-3 w-3 shrink-0" />
+                <AuctionTimer
+                  endsAt={auctionEndsAt}
+                  timeLeftLabel={t("timeLeft")}
+                  endedLabel={t("auctionEnded")}
+                />
+              </span>
+            )}
+          </div>
+
+          {smartBadge.insight && (
+            <p className="text-[10px] text-[#94A3B8] leading-snug pl-0.5 -mt-1">
+              {smartBadge.insight}
             </p>
-            <p className="text-[2.25rem] font-extrabold text-gray-900 dark:text-white tracking-tight leading-none tabular-nums">
-              {formatCop(copCurrentBid)}
+          )}
+        </div>
+
+        <div className="mt-4 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
+
+        {/* ── 3. PRICE BREAKDOWN ────────────────────────────────────── */}
+        {isAuction ? (
+          <div className="mt-4 flex flex-col gap-1">
+            <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">Puja actual</p>
+            <p className="text-3xl font-semibold text-[#0F172A] dark:text-white tabular-nums tracking-[-0.01em]">
+              {copCurrentBid !== undefined ? formatCop(copCurrentBid) : formatCop(copLanded)}
             </p>
-            {currentBid !== undefined && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                ~{formatUsd(currentBid)} USD
+            <p className="text-xs text-[#94A3B8]">
+              ~{currentBid !== undefined ? formatUsd(currentBid) : formatUsd(landedPrice)} USD
+            </p>
+            {estimatedFinalPrice !== undefined && (
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                Final est.{" "}
+                <span className="font-medium text-[#64748B] dark:text-[#A1A1AA]">
+                  ~{formatUsd(estimatedFinalPrice)} USD
+                </span>
               </p>
             )}
-            {copEstFinal !== undefined && estimatedFinalPrice !== undefined && (
-              <p className="pt-1.5 text-sm text-gray-600 dark:text-gray-400">
-                {t("couldWinFor")}{" "}
-                <span className="font-semibold text-violet-600 dark:text-violet-400">
-                  {formatCop(copEstFinal)}
+            {savingsPct > 0 && (
+              <div className="mt-3 flex items-center gap-2 text-sm">
+                <span className="font-medium text-violet-600 dark:text-violet-400">
+                  Ahorras {formatCop(copSavings)}
                 </span>
-                <span className="text-[11px] text-gray-400 dark:text-gray-500 ml-1">
-                  (~{formatUsd(estimatedFinalPrice)} USD)
-                </span>
-              </p>
+                <span className="text-[#94A3B8]">({savingsPct}%)</span>
+              </div>
             )}
           </div>
         ) : (
-          <div>
-            <p className="text-[2.25rem] font-extrabold text-gray-900 dark:text-white tracking-tight leading-none tabular-nums">
-              {formatCop(copLanded)}
-            </p>
-            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-              ~{formatUsd(landedPrice)} USD
-            </p>
-          </div>
-        )}
-
-        {/* ── 3. SAVINGS ────────────────────────────────────────────── */}
-        {savingsPct > 0 && (
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 -mt-1">
-            <span
-              className={cn(
-                "text-sm font-semibold",
-                isAuction
-                  ? "text-violet-600 dark:text-violet-400"
-                  : "text-emerald-700 dark:text-emerald-400"
-              )}
-            >
-              {formatCop(copSavings)} menos
-            </span>
-            <span className="shrink-0 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/[0.06] rounded px-1.5 py-0.5 tabular-nums">
-              {savingsPct}%
-            </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500 w-full">
-              vs. {formatCop(copLocal)} local
-            </span>
-          </div>
-        )}
-
-        {/* ── 4. EXPLANATION ────────────────────────────────────────── */}
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug -mt-1">
-          {primaryExplanation}
-        </p>
-
-        {/* ── 5. PRODUCT TITLE + META ───────────────────────────────── */}
-        <div className="pt-3 border-t border-gray-100 dark:border-[#26262B]">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-snug line-clamp-2">
-            {title}
-          </h3>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-            Score {score}/100
-            {listingsCount !== undefined && listingsCount > 0 && (
-              <> · {t("offersLabel", { count: listingsCount })}</>
+          <div className="mt-4 space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#64748B] dark:text-[#94A3B8]">Precio origen</span>
+              <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">
+                {formatUsd(price)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#64748B] dark:text-[#94A3B8]">Envío + impuestos</span>
+              <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">
+                +{formatUsd(Math.round(landedPrice - price))}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm pt-1.5 border-t border-[#E2E8F0] dark:border-[#26262B]">
+              <span className="font-semibold text-[#0F172A] dark:text-white">Total en Colombia</span>
+              <span className="tabular-nums font-semibold text-[#0F172A] dark:text-white">
+                {formatCop(copLanded)}
+              </span>
+            </div>
+            {worthImporting && savingsPct > 0 && (
+              <div className="mt-1 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200 dark:border-emerald-500/20">
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  Ahorras {formatCop(copSavings)} ({savingsPct}%) vs Colombia
+                </p>
+              </div>
             )}
-            {marketplaceLabel && <> · {marketplaceLabel}</>}
-          </p>
-        </div>
+          </div>
+        )}
 
         {/* ── PRICING WARNING ───────────────────────────────────────── */}
         {pricingWarning && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5 -mt-1">
+          <p className="mt-3 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
             <TriangleAlert className="h-3 w-3 shrink-0" />
             {pricingWarning}
           </p>
@@ -218,15 +236,15 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            "group inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold",
-            "transition-all duration-200 active:scale-[0.99]",
+            "group/cta inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold",
+            "transition-all duration-200 active:scale-[0.97] group-hover:scale-[1.02]",
             isAuction || worthImporting
-              ? "bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:shadow-[0_0_20px_rgba(37,99,235,0.25)]"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-300 dark:hover:bg-white/[0.10]"
+              ? "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-[0_2px_8px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.3)]"
+              : "bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0] dark:bg-white/[0.06] dark:text-[#94A3B8] dark:hover:bg-white/[0.10]"
           )}
         >
           <span>{ctaLabel}</span>
-          <ExternalLink className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+          <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5" />
         </a>
       </CardFooter>
     </Card>

@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,9 +6,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -38,7 +39,7 @@ export default async function RootLayout({
       lang={locale}
       /* No hardcoded dark class — the FOUC script below sets it before first paint.
          suppressHydrationWarning prevents React mismatch when class differs from SSR. */
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       {/*
@@ -54,7 +55,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white dark:bg-[#0B0B0C] text-gray-900 dark:text-white">
+      <body className="min-h-full flex flex-col bg-[#FAFAFA] dark:bg-[#0B0B0C] text-[#0F172A] dark:text-white">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>
             <Header />

@@ -1,452 +1,361 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { SearchBar } from "@/components/search-bar";
 import { OpportunityCard } from "@/components/opportunity-card";
-import { Opportunity } from "@/types/opportunity";
-import { useReveal } from "@/hooks/use-reveal";
+import { OpportunityGridSkeleton } from "@/components/opportunity-card-skeleton";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSearch } from "@/hooks/use-search";
+import { compareFetcher } from "@/lib/api";
 
-export default function Home() {
+const cardContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+const cardItem = {
+  hidden: { opacity: 0, y: 20, scale: 0.98, filter: "blur(6px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+function Home() {
   const t = useTranslations("home");
-  const tMock = useTranslations("mockData");
 
-  const MOCK_OPPORTUNITIES: Opportunity[] = [
-    {
-      title: "KEF R3 Meta Bookshelf Speakers (Titanium Grey) — Near Mint",
-      price: 1199,
-      landedPrice: 1540,
-      savingsPercentage: 0.32,
-      score: 82,
-      type: "fixed",
-      externalUrl: "https://reverb.com",
-      marketplace: "reverb",
-      shippingMethod: "locker",
-      listingsCount: 3,
-      worthImporting: true,
-      isTopDeal: true,
-      explanation: [tMock("kef.exp0"), tMock("kef.exp1")],
-    },
-    {
-      title: "Technics SL-1200MK2 Direct Drive Turntable — Excellent",
-      price: 680,
-      landedPrice: 920,
-      savingsPercentage: 0.41,
-      score: 91,
-      type: "auction",
-      externalUrl: "https://ebay.com",
-      marketplace: "ebay",
-      shippingMethod: "locker",
-      listingsCount: 5,
-      worthImporting: true,
-      isTopDeal: true,
-      auctionEndsAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      currentBid: 620,
-      estimatedFinalPrice: 750,
-      explanation: [tMock("technics.exp0"), tMock("technics.exp1")],
-    },
-    {
-      title: "McIntosh MA352 Hybrid Integrated Amplifier",
-      price: 3800,
-      landedPrice: 4850,
-      savingsPercentage: 0.28,
-      score: 76,
-      type: "fixed",
-      externalUrl: "https://reverb.com",
-      marketplace: "reverb",
-      shippingMethod: "direct",
-      listingsCount: 1,
-      worthImporting: true,
-      isTopDeal: true,
-      explanation: [tMock("mcintosh.exp0")],
-    },
-    {
-      title: "Focal Aria 906 Bookshelf Speakers — Very Good",
-      price: 850,
-      landedPrice: 1220,
-      savingsPercentage: 0.08,
-      score: 42,
-      type: "fixed",
-      externalUrl: "https://audiogon.com",
-      marketplace: "audiogon",
-      shippingMethod: "direct",
-      listingsCount: 2,
-      worthImporting: false,
-      isTopDeal: false,
-      explanation: [tMock("focal.exp0"), tMock("focal.exp1")],
-    },
-    {
-      title: "Denon PMA-1700NE Integrated Amplifier — Mint",
-      price: 1400,
-      landedPrice: 1840,
-      savingsPercentage: 0.24,
-      score: 68,
-      type: "fixed",
-      externalUrl: "https://ebay.com",
-      marketplace: "ebay",
-      shippingMethod: "locker",
-      listingsCount: 2,
-      worthImporting: true,
-      isTopDeal: false,
-      explanation: [tMock("denon.exp0"), tMock("denon.exp1")],
-    },
-  ];
-
-  const topDeals = MOCK_OPPORTUNITIES.filter((o) => o.isTopDeal);
-  const otherOpportunities = MOCK_OPPORTUNITIES.filter((o) => !o.isTopDeal);
-
-  const [query, setQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<Opportunity[] | null>(null);
-
-  // One observer per scrollable section — each fires independently as user scrolls
-  const topDealsReveal = useReveal();
-  const allOppsReveal = useReveal();
-
-  async function handleSearch(q: string) {
-    setIsSearching(true);
-    setQuery(q);
-    await new Promise((r) => setTimeout(r, 500));
-    setResults(MOCK_OPPORTUNITIES);
-    setIsSearching(false);
-  }
-
-  const innerPad = "mx-auto w-full max-w-6xl px-4 sm:px-6";
+  const { query, setQuery, results, isLoading: isSearching, error, search } = useSearch({
+    fetcher: compareFetcher,
+    resultsAnchor: "#results",
+  });
 
   return (
     <>
-      {/* ─────────────────────────────────────────────────────────────
-          1. HERO — propuesta de valor, sin input
-          Full-bleed so the gradient/glow extends to viewport edges.
-      ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-white dark:bg-[#0B0B0C] py-28 sm:py-36">
-        {/* Soft radial glow — sits behind everything */}
-        <div className="pointer-events-none absolute top-[-120px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/8" />
-        {/* Gradient overlay top-to-transparent */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent" />
+      {/* 1. HERO */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#EFF6FF] via-[#F8FAFF] to-[#FAFAFA] dark:from-[#0B0B0C] dark:via-[#0B0B0C] dark:to-[#0B0B0C] py-24 sm:py-36 px-6">
+        {/* Glow animado */}
+        <motion.div
+          initial={{ opacity: 0.4, scale: 0.9 }}
+          animate={{ opacity: 0.8, scale: 1.1 }}
+          transition={{ duration: 6, repeat: Infinity, repeatType: "mirror" }}
+          className="pointer-events-none absolute top-[-140px] left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full bg-[#2563EB]/[0.14] blur-[160px]"
+        />
 
-        <div className={cn(innerPad, "relative z-10")}>
-          <div className="w-full max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6 leading-[1.1]">
-              {t("hero.titlePrefix")}
-              <br className="hidden sm:block" />
-              {" "}
-              <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-                {t("hero.titleGradient")}
-              </span>
-            </h1>
+        <div className="relative z-10 max-w-3xl mx-auto text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl sm:text-[60px] font-semibold tracking-[-0.02em] text-[#0F172A] dark:text-white leading-[1.10]"
+          >
+            {t("hero.titlePrefix")}
+            <br className="hidden sm:block" />
+            {" "}<span className="bg-gradient-to-r from-[#2563EB] to-[#7C3AED] bg-clip-text text-transparent">{t("hero.titleGradient")}</span>
+          </motion.h1>
 
-            <p className="max-w-xl mx-auto text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("hero.subtitle")}
-            </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.6 }}
+            className="mt-5 text-lg text-[#64748B] dark:text-[#94A3B8] max-w-xl mx-auto leading-relaxed"
+          >
+            {t("hero.subtitle")}
+          </motion.p>
 
-            <p className="mt-8 text-xs text-gray-400 dark:text-gray-500">
-              <span className="font-medium text-gray-600 dark:text-gray-400">
-                {t("hero.affiliateFree")}
-              </span>
-              {" "}{t("hero.affiliateDisclosure")}
-            </p>
-          </div>
+          {/* Search — pieza central */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mt-10 flex justify-center"
+          >
+            <SearchBar
+              value={query}
+              onChange={setQuery}
+              onSearch={search}
+              isLoading={isSearching}
+            />
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="mt-4 text-sm text-[#94A3B8]"
+          >
+            {t("hero.trust")}
+          </motion.p>
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          2. CÓMO FUNCIONA — 3 pasos (usuario entiende el producto)
-      ───────────────────────────────────────────────────────────── */}
-      <section className="border-t border-gray-200 dark:border-[#26262B] py-16 sm:py-20">
-        <div className={innerPad}>
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {t("howItWorks.heading")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      {/* 2. COMO FUNCIONA */}
+      <section className="bg-[#F1F5F9] dark:bg-[#0B0B0C] py-28 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.h2
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="text-[28px] font-semibold tracking-[-0.01em] text-center text-[#0F172A] dark:text-white"
+          >
+            {t("howItWorks.heading")}
+          </motion.h2>
+          <motion.div
+            variants={cardContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12"
+          >
             {[
-              { num: "01", titleKey: "howItWorks.step1Title", descKey: "howItWorks.step1Desc" },
-              { num: "02", titleKey: "howItWorks.step2Title", descKey: "howItWorks.step2Desc" },
-              { num: "03", titleKey: "howItWorks.step3Title", descKey: "howItWorks.step3Desc" },
-            ].map(({ num, titleKey, descKey }) => (
-              <div key={num} className="flex flex-col gap-3">
-                <span className="text-4xl font-black text-gray-400 dark:text-gray-600 leading-none select-none">
+              { num: "01", titleKey: "howItWorks.step1Title", descKey: "howItWorks.step1Desc",
+                badgeBg: "bg-gradient-to-br from-[#DBEAFE] to-[#BFDBFE] dark:from-blue-500/10 dark:to-blue-500/5",
+                badgeText: "text-[#1D4ED8] dark:text-blue-400" },
+              { num: "02", titleKey: "howItWorks.step2Title", descKey: "howItWorks.step2Desc",
+                badgeBg: "bg-gradient-to-br from-[#EDE9FE] to-[#DDD6FE] dark:from-purple-500/10 dark:to-purple-500/5",
+                badgeText: "text-[#6D28D9] dark:text-purple-400" },
+              { num: "03", titleKey: "howItWorks.step3Title", descKey: "howItWorks.step3Desc",
+                badgeBg: "bg-gradient-to-br from-[#D1FAE5] to-[#A7F3D0] dark:from-emerald-500/10 dark:to-emerald-500/5",
+                badgeText: "text-[#065F46] dark:text-emerald-400" },
+            ].map(({ num, titleKey, descKey, badgeBg, badgeText }) => (
+              <motion.div
+                key={num}
+                variants={fadeUp}
+                className="p-7 rounded-2xl bg-white dark:bg-[#111113] border border-[#E2E8F0] dark:border-[#26262B] shadow-sm hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out"
+              >
+                <div className={cn("w-14 h-14 flex items-center justify-center rounded-2xl text-xl font-bold tabular-nums select-none shadow-sm", badgeBg, badgeText)}>
                   {num}
-                </span>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                </div>
+                <h3 className="mt-5 text-base font-semibold text-[#0F172A] dark:text-white leading-snug">
                   {t(titleKey as Parameters<typeof t>[0])}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="mt-2 text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                   {t(descKey as Parameters<typeof t>[0])}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. EJEMPLO REAL — prueba concreta antes de la acción
-          Slight background shift creates depth layers.
-      ───────────────────────────────────────────────────────────── */}
-      <section className="border-t border-gray-200 dark:border-[#26262B] bg-gray-50 dark:bg-[#0E0E10] py-16 sm:py-20">
-        <div className={innerPad}>
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-semibold mb-4 ring-1 ring-success/20">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              {t("example.pill")}
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {t("example.heading")}
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2.5 max-w-md mx-auto leading-relaxed">
-              {t("example.subheading")}
+      {/* 3. COMPARACIÓN EN VIVO */}
+      <section className="bg-white dark:bg-[#0B0B0C] py-24 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="text-center mb-12"
+          >
+            <p className="text-[11px] font-bold text-[#2563EB] uppercase tracking-[0.18em] mb-3">
+              Ejemplo real
             </p>
-          </div>
+            <h2 className="text-[28px] font-semibold tracking-[-0.01em] text-[#0F172A] dark:text-white">
+              Así se ve una comparación
+            </h2>
+            <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-2">
+              KEF R3 Meta — encontrado en eBay · Near Mint
+            </p>
+          </motion.div>
 
-          <div className="max-w-xl mx-auto">
-            <div className="bg-white dark:bg-[#111113] border border-gray-200 dark:border-[#26262B] rounded-2xl shadow-md overflow-hidden">
-              {/* Product header */}
-              <div className="px-6 py-5 border-b border-gray-200 dark:border-[#26262B] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 dark:bg-[#2563EB]/20 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-[#2563EB]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0 0l-4-4m4 4l4-4M9 9H6a2 2 0 00-2 2v2a2 2 0 002 2h3" />
-                  </svg>
+          <motion.div
+            variants={cardContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-1 md:grid-cols-[1fr_48px_1fr] items-stretch gap-0"
+          >
+            {/* ── IMPORTAR (winner) ─────────────────────────────── */}
+            <motion.div
+              variants={fadeUp}
+              className="relative p-6 rounded-2xl md:rounded-r-none bg-white dark:bg-[#111113] border-2 border-[#2563EB]/40 dark:border-[#2563EB]/30 shadow-[0_4px_32px_rgba(37,99,235,0.14)] flex flex-col gap-4"
+            >
+              {/* Winner badge */}
+              <div className="absolute top-4 right-4 bg-[#2563EB] text-white text-[10px] font-bold px-2.5 py-1 rounded-lg tracking-wide shadow-sm">
+                Mejor opción
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">✓ Importar</p>
+                <p className="text-2xl font-semibold text-[#0F172A] dark:text-white tabular-nums tracking-[-0.01em] mt-1">
+                  $6.314.000 COP
+                </p>
+                <p className="text-xs text-[#94A3B8] mt-0.5">~$1.540 USD total</p>
+              </div>
+
+              {/* Breakdown */}
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#64748B] dark:text-[#94A3B8]">Precio origen (eBay)</span>
+                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">$4.919.000</span>
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                    {t("example.pill")}
-                  </p>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
-                    {t("example.product")}
-                  </h3>
+                <div className="flex justify-between">
+                  <span className="text-[#64748B] dark:text-[#94A3B8]">Envío al casillero</span>
+                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">+$246.000</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#64748B] dark:text-[#94A3B8]">Arancel + IVA</span>
+                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">+$1.149.000</span>
                 </div>
               </div>
 
-              {/* Price comparison — two columns */}
-              <div className="grid grid-cols-2 divide-x divide-gray-200 dark:divide-[#26262B]">
-                <div className="px-6 py-6">
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-                    {t("example.localLabel")}
-                  </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tabular-nums">
-                    $12.900.000
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                    {t("example.localSource")}
-                  </p>
-                </div>
-                <div className="px-6 py-6 bg-success/5 dark:bg-success/8 relative">
-                  <span className="absolute top-3 right-3 text-[9px] font-bold text-success bg-success/15 dark:bg-success/20 px-2 py-0.5 rounded-full ring-1 ring-success/20 leading-none">
-                    {t("example.bestOption")}
-                  </span>
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-                    {t("example.importLabel")}
-                  </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-success tabular-nums">
-                    $8.700.000
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                    {t("example.importSource")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Savings banner */}
-              <div className="flex items-center justify-between px-6 py-4 bg-success text-white">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 17l5 5m0 0l-5-5m5 5V6M6 13l-3 3m0 0l-3-3m3 3V4" />
-                  </svg>
-                  <span className="text-sm font-semibold">{t("example.youSave")}</span>
-                </div>
-                <span className="text-xl font-bold tabular-nums">{t("example.savingsPct")}</span>
-              </div>
-
-              {/* Recommendation */}
-              <div className="px-6 py-5 flex items-start gap-3">
-                <svg className="w-4 h-4 text-success shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {t("example.recoBold")}
-                  </span>
-                  {" "}
-                  {t("example.recoDetail")}
+              {/* Savings callout */}
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200 dark:border-emerald-500/20">
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  Ahorras $2.969.000 (32%) vs comprar local
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          4. SEARCH — acción solo después de entender el producto
-      ───────────────────────────────────────────────────────────── */}
-      <section className="border-t border-gray-200 dark:border-[#26262B] py-16 sm:py-20">
-        <div className={cn(innerPad, "text-center")}>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-3">
-            {t("search.sectionHeading")}
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-8 max-w-sm mx-auto">
-            {t("hero.trust")}
-          </p>
-          <div className="flex justify-center">
-            <SearchBar onSearch={handleSearch} isLoading={isSearching} />
-          </div>
-        </div>
-      </section>
+              <p className="text-sm font-medium text-[#2563EB] dark:text-blue-400 -mb-1">
+                💡 Landed recomienda importar
+              </p>
 
-      {/* ─────────────────────────────────────────────────────────────
-          5. RESULTADOS
-      ───────────────────────────────────────────────────────────── */}
-      <div className={innerPad}>
-        {results !== null ? (
-          <section className="pb-20">
-            <div className="flex items-baseline justify-between mb-8">
-              <h2 className="text-sm font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">
-                {t("results.forQuery", { query })}
-              </h2>
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                {t("results.found", { count: results.length })}
+              <a
+                href="https://www.ebay.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.35)] active:scale-[0.97] transition-all duration-150"
+              >
+                Ver en eBay
+              </a>
+            </motion.div>
+
+            {/* ── VS divider ───────────────────────────────────── */}
+            <div className="hidden md:flex items-center justify-center">
+              <span className="text-[11px] font-black text-[#94A3B8] dark:text-[#3F3F46] uppercase tracking-[0.25em] select-none writing-mode-vertical rotate-0">
+                VS
               </span>
             </div>
-            {isSearching ? (
-              <SkeletonGrid />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map((opp, i) => (
-                  <OpportunityCard key={i} opportunity={opp} />
-                ))}
-              </div>
-            )}
-          </section>
-        ) : (
-          <>
-            {/* ── Top Deals ──────────────────────────────────── */}
-            <section className="pb-12">
-              <div ref={topDealsReveal.ref}>
-                <div
-                  className={cn(
-                    "mb-8 transition-all duration-500 ease-out",
-                    topDealsReveal.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-                  )}
-                >
-                  <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    {t("topDeals.heading")}
-                  </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">
-                    {t("topDeals.subheading")}
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {topDeals.map((opp, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "transition-all duration-700 ease-out",
-                        topDealsReveal.visible
-                          ? "opacity-100 translate-y-0 blur-none"
-                          : "opacity-0 translate-y-8 blur-sm"
-                      )}
-                      style={{ transitionDelay: topDealsReveal.visible ? `${i * 120 + 150}ms` : "0ms" }}
-                    >
-                      <OpportunityCard opportunity={opp} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+            <div className="flex md:hidden items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
+              <span className="text-[11px] font-black text-[#94A3B8] dark:text-[#3F3F46] uppercase tracking-[0.25em] select-none">VS</span>
+              <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
+            </div>
 
-            {/* ── All Opportunities ──────────────────────────── */}
-            <section className="pb-20">
-              <div ref={allOppsReveal.ref}>
-                <div
-                  className={cn(
-                    "border-t border-gray-200 dark:border-[#26262B] pt-10 mb-8",
-                    "transition-all duration-500 ease-out",
-                    allOppsReveal.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-                  )}
-                >
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
-                        {t("results.heading")}
-                      </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {t("results.subheading")}
-                      </p>
-                    </div>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
-                      {t("results.found", { count: otherOpportunities.length })}
-                    </span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {otherOpportunities.map((opp, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "transition-all duration-700 ease-out",
-                        allOppsReveal.visible
-                          ? "opacity-100 translate-y-0 blur-none"
-                          : "opacity-0 translate-y-8 blur-sm"
-                      )}
-                      style={{ transitionDelay: allOppsReveal.visible ? `${i * 100 + 150}ms` : "0ms" }}
-                    >
-                      <OpportunityCard opportunity={opp} />
-                    </div>
-                  ))}
-                </div>
+            {/* ── COMPRAR LOCAL (loser) ─────────────────────────── */}
+            <motion.div
+              variants={fadeUp}
+              className="p-6 rounded-2xl md:rounded-l-none bg-[#FAFAFA] dark:bg-[#0D0D0F] border border-[#E2E8F0] dark:border-[#26262B] opacity-90 flex flex-col gap-4"
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">Comprar en Colombia</p>
+                <p className="text-2xl font-semibold text-[#64748B] dark:text-[#71717A] tabular-nums tracking-[-0.01em] mt-1 line-through decoration-[#CBD5E1] dark:decoration-[#3F3F46]">
+                  $9.283.000 COP
+                </p>
+                <p className="text-xs text-[#94A3B8] mt-0.5">precio estimado tiendas locales</p>
               </div>
-            </section>
 
-            {/* ── Value Proposition ──────────────────────────── */}
-            <section className="py-16 sm:py-20 border-t border-gray-200 dark:border-[#26262B]">
-              <div className="text-center mb-10">
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  {t("valueProp.heading")}
+              <div className="space-y-2 text-sm text-[#64748B] dark:text-[#94A3B8]">
+                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Precio inflado por distribución e importación local</p>
+                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Menor disponibilidad de unidades</p>
+                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Menos opciones de condición y color</p>
+              </div>
+
+              <p className="text-sm font-medium text-[#94A3B8] dark:text-[#52525B] -mb-1">
+                ❌ No recomendado en este caso
+              </p>
+
+              <button
+                disabled
+                className="mt-auto w-full py-3 rounded-xl text-sm font-semibold bg-[#F1F5F9] dark:bg-white/[0.04] text-[#94A3B8] dark:text-[#52525B] cursor-not-allowed select-none"
+              >
+                Ver tiendas locales
+              </button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 4. RESULTADOS */}
+      <section id="results" className="bg-[#FAFAFA] dark:bg-[#0B0B0C] py-24 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
+        <div className="max-w-6xl mx-auto px-6">
+          {results !== null ? (
+            <>
+              <div className="flex items-baseline justify-between mb-8">
+                <h2 className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">
+                  {t("results.forQuery", { query })}
                 </h2>
+                <span className="text-xs text-[#94A3B8]">
+                  {t("results.found", { count: results.length })}
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                {[
-                  { titleKey: "valueProp.item1Title", descKey: "valueProp.item1Desc" },
-                  { titleKey: "valueProp.item2Title", descKey: "valueProp.item2Desc" },
-                  { titleKey: "valueProp.item3Title", descKey: "valueProp.item3Desc" },
-                ].map(({ titleKey, descKey }) => (
-                  <div key={titleKey} className="bg-white dark:bg-[#111113] border border-gray-200 dark:border-[#26262B] rounded-xl p-6">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
-                      {t(titleKey as Parameters<typeof t>[0])}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {t(descKey as Parameters<typeof t>[0])}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center mt-10">
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 bg-[#2563EB] text-white rounded-xl px-6 py-3 text-sm font-semibold hover:bg-[#1D4ED8] hover:shadow-[0_0_20px_rgba(37,99,235,0.25)] transition-all duration-200"
-                >
-                  {t("valueProp.cta")}
-                </button>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
+              {error && (
+                <p className="mb-6 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3">
+                  {error}
+                </p>
+              )}
+              <AnimatePresence mode="wait">
+                {isSearching ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                  >
+                    <OpportunityGridSkeleton />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  >
+                    <motion.div
+                      variants={cardContainer}
+                      initial="hidden"
+                      animate="show"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                      {results.map((opp, i) => (
+                        <motion.div key={i} variants={cardItem}>
+                          <OpportunityCard opportunity={opp} />
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          ) : (
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              className="flex flex-col items-center gap-4 py-20 text-center"
+            >
+              <p className="text-4xl select-none">🔍</p>
+              <p className="text-base font-medium text-[#0F172A] dark:text-white">
+                {t("results.heading")}
+              </p>
+              <p className="text-sm text-[#64748B] dark:text-[#94A3B8] max-w-sm">
+                {t("results.subheading")}
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </section>
     </>
   );
 }
 
-function SkeletonGrid() {
+export default function Page() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-xl border bg-card h-72 animate-pulse" />
-      ))}
-    </div>
+    <Suspense>
+      <Home />
+    </Suspense>
   );
 }
+
+

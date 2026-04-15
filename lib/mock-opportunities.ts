@@ -1,0 +1,82 @@
+/**
+ * Mock opportunity data — used by the default search fetcher and the page's
+ * "top deals" section before the user runs a search.
+ *
+ * Replace / augment these with real API results as the backend grows.
+ */
+
+import { Opportunity } from "@/types/opportunity";
+
+export const MOCK_OPPORTUNITIES: Opportunity[] = [
+  {
+    title: "KEF R3 Meta Bookshelf Speakers — Near Mint",
+    price: 1199,
+    landedPrice: 1540,
+    savingsPercentage: 0.32,
+    score: 92,
+    type: "fixed",
+    externalUrl: "https://www.ebay.com",
+    marketplace: "ebay",
+    shippingMethod: "locker",
+    listingsCount: 3,
+    worthImporting: true,
+    isTopDeal: true,
+    recommendation: "import",
+    condition: "Near Mint",
+    location: "USA",
+  },
+  {
+    title: "McIntosh MA352 Hybrid Integrated Amplifier",
+    price: 950,
+    landedPrice: 1240,
+    savingsPercentage: 0.47,
+    score: 95,
+    type: "auction",
+    externalUrl: "https://www.ebay.com",
+    marketplace: "ebay",
+    shippingMethod: "locker",
+    listingsCount: 1,
+    worthImporting: true,
+    isTopDeal: true,
+    recommendation: "import",
+    condition: "Used — Excellent",
+    location: "USA",
+    auctionEndsAt: new Date(Date.now() + 1.3 * 60 * 60 * 1000).toISOString(),
+    currentBid: 620,
+    estimatedFinalPrice: 950,
+  },
+  {
+    title: "Focal Utopia Over-Ear Headphones — Open Box",
+    price: 2800,
+    landedPrice: 3640,
+    savingsPercentage: 0.25,
+    score: 88,
+    type: "fixed",
+    externalUrl: "https://www.ebay.com",
+    marketplace: "ebay",
+    shippingMethod: "direct",
+    listingsCount: 2,
+    worthImporting: true,
+    isTopDeal: false,
+    recommendation: "import",
+    condition: "Open Box",
+    location: "USA",
+  },
+  {
+    title: "Chord Qutest DAC — New",
+    price: 1700,
+    landedPrice: 2210,
+    savingsPercentage: 0.03,
+    score: 62,
+    type: "fixed",
+    externalUrl: "https://www.reverb.com",
+    marketplace: "reverb",
+    shippingMethod: "direct",
+    listingsCount: 1,
+    worthImporting: false,
+    isTopDeal: false,
+    recommendation: "local",
+    condition: "New",
+    location: "UK",
+  },
+];

@@ -1,4 +1,5 @@
 export type ListingType = "auction" | "fixed";
+export type Recommendation = "import" | "local";
 
 export interface Opportunity {
   title: string;
@@ -15,6 +16,9 @@ export interface Opportunity {
   shippingMethod?: string;
   explanation?: string[];
   pricingWarning?: string;
+  condition?: string;
+  location?: string;
+  recommendation?: Recommendation;
   /** UI decision fields */
   listingsCount?: number;
   worthImporting?: boolean;
