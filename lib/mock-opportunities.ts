@@ -1,8 +1,6 @@
 /**
- * Mock opportunity data — used by the default search fetcher and the page's
- * "top deals" section before the user runs a search.
- *
- * Replace / augment these with real API results as the backend grows.
+ * Mock opportunity data — used by the default search fetcher and dev/testing.
+ * Shape matches the new DecisionResult-based Opportunity type.
  */
 
 import { Opportunity } from "@/types/opportunity";
@@ -10,73 +8,49 @@ import { Opportunity } from "@/types/opportunity";
 export const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     title: "KEF R3 Meta Bookshelf Speakers — Near Mint",
-    price: 1199,
-    landedPrice: 1540,
-    savingsPercentage: 0.32,
-    score: 92,
-    type: "fixed",
+    priceUsd: 1199,
     externalUrl: "https://www.ebay.com",
     marketplace: "ebay",
-    shippingMethod: "locker",
-    listingsCount: 3,
-    worthImporting: true,
     isTopDeal: true,
-    recommendation: "import",
-    condition: "Near Mint",
-    location: "USA",
+    decision: {
+      recommended: "import_locker",
+      reason: "Ahorro de $1.312.000 COP vs precio local",
+      importScenarios: [
+        { method: "locker", totalCop: 6300000, available: true },
+      ],
+      bestLocal: { store: "Colombia", priceCop: 7612000 },
+      savingsVsLocal: 1312000,
+    },
   },
   {
     title: "McIntosh MA352 Hybrid Integrated Amplifier",
-    price: 950,
-    landedPrice: 1240,
-    savingsPercentage: 0.47,
-    score: 95,
-    type: "auction",
+    priceUsd: 950,
     externalUrl: "https://www.ebay.com",
     marketplace: "ebay",
-    shippingMethod: "locker",
-    listingsCount: 1,
-    worthImporting: true,
-    isTopDeal: true,
-    recommendation: "import",
-    condition: "Used — Excellent",
-    location: "USA",
-    auctionEndsAt: new Date(Date.now() + 1.3 * 60 * 60 * 1000).toISOString(),
-    currentBid: 620,
-    estimatedFinalPrice: 950,
+    decision: {
+      recommended: "import_direct",
+      reason: "Ahorro de $2.050.000 COP con envío directo",
+      importScenarios: [
+        { method: "direct", totalCop: 5100000, available: true },
+        { method: "locker", totalCop: 5600000, available: true },
+      ],
+      bestLocal: { store: "Colombia", priceCop: 7150000 },
+      savingsVsLocal: 2050000,
+    },
   },
   {
     title: "Focal Utopia Over-Ear Headphones — Open Box",
-    price: 2800,
-    landedPrice: 3640,
-    savingsPercentage: 0.25,
-    score: 88,
-    type: "fixed",
-    externalUrl: "https://www.ebay.com",
-    marketplace: "ebay",
-    shippingMethod: "direct",
-    listingsCount: 2,
-    worthImporting: true,
-    isTopDeal: false,
-    recommendation: "import",
-    condition: "Open Box",
-    location: "USA",
-  },
-  {
-    title: "Chord Qutest DAC — New",
-    price: 1700,
-    landedPrice: 2210,
-    savingsPercentage: 0.03,
-    score: 62,
-    type: "fixed",
+    priceUsd: 2800,
     externalUrl: "https://www.reverb.com",
     marketplace: "reverb",
-    shippingMethod: "direct",
-    listingsCount: 1,
-    worthImporting: false,
-    isTopDeal: false,
-    recommendation: "local",
-    condition: "New",
-    location: "UK",
+    decision: {
+      recommended: "buy_local",
+      reason: "Más barato en Colombia después de impuestos",
+      importScenarios: [
+        { method: "locker", totalCop: 18200000, available: true },
+      ],
+      bestLocal: { store: "Colombia", priceCop: 15900000 },
+      savingsVsLocal: -2300000,
+    },
   },
 ];

@@ -1,7 +1,50 @@
 # Estado del Proyecto - Landed (Backend + Frontend)
 
-**Fecha:** 13 de Abril de 2026
-**Backend URL:** `https://landed-api-staging-575929073955.us-central1.run.app`
+**Fecha:** 15 de Abril de 2026
+**Backend URL (staging):** `https://landed-api-staging-dtugfril4a-uc.a.run.app`
+**Frontend URL (staging):** `https://landed-frontend-staging-dtugfril4a-uc.a.run.app`
+
+---
+
+## ✅ Sesión 15 de Abril 2026 — MercadoLibre debug + Fix filtro condición + OAuth flow
+
+### Resumen
+Investigación completa del problema de "Precio estimado" en las cards. Se identificó y corrigió el filtro de condición en MercadoLibre, se actualizó el MELI_CLIENT_SECRET, se completó el flujo OAuth y se descubrió que el bloqueo final es a nivel de IP de Google Cloud.
+
+### Cambios en el backend (`/Documents/landed/backend/landed-backend`)
+
+#### `src/local-market/mercadolibre.api.ts`
+- **Eliminado** el filtro `.filter((item) => item.condition === 'new')` — ahora acepta listings nuevos y usados (relevante para audio de segunda mano en Colombia).
+- **Cambiado** `getAppToken()` por preferencia de user OAuth token: ahora `searchListings()` llama primero a `mercadoLibreAuthService.getValidAccessToken()` y solo usa el app token como fallback. Permite usar el token del flujo authorization_code cuando está disponible.
+
+#### `deploy/staging.env.yaml`
+- `MELI_CLIENT_SECRET` corregido de `TP7fWHl6E7diq1yFIPIKP9uMs4QirtGr` (inválido) a `JkO2GXZqIOl6m1DntaZjgn1lVAX3sbVF` (válido — la diferencia es una `l` minúscula vs `I` mayúscula).
+
+### Cambios en el frontend (`/Documents/landed/landed-frontend`)
+
+#### `app/page.tsx`
+- Texto "precio estimado tiendas locales" → "precio en tiendas locales" en la sección de ejemplo ilustrativo.
+
+### Estado actual del problema MercadoLibre
+
+**Root cause confirmado:** MercadoLibre bloquea con `403 forbidden` las IPs de Google Cloud Run (us-central1). El bloqueo ocurre incluso con user OAuth token válido (`APP_USR-...`).
+
+**Flujo OAuth completado:**
+- App ID: `7751126610821104`
+- User token persistido en cache (en memoria, se pierde en cada redeploy)
+- URL de autorización: `https://auth.mercadolibre.com.co/authorization?response_type=code&client_id=7751126610821104&redirect_uri=https://landed-api-staging-dtugfril4a-uc.a.run.app/auth/mercadolibre/callback`
+- Redirect URI registrado en el portal de MercadoLibre: `https://landed-api-staging-dtugfril4a-uc.a.run.app/auth/mercadolibre/callback`
+
+**Pendiente crítico:** El token OAuth se guarda en memoria (`CacheManager`) y se pierde en cada redeploy. Para que MercadoLibre funcione de forma persistente se necesita:
+1. **Proxy residencial con IP colombiana** (Brightdata/Oxylabs) — bloqueo es de proveedor cloud, no de credenciales.
+2. O bien, **persistir el token en Redis** para sobrevivir reinicios (pero el bloqueo de IP persiste igualmente desde Cloud Run).
+
+### Credenciales Cloud Run staging actuales
+```
+MELI_CLIENT_ID: 7751126610821104
+MELI_CLIENT_SECRET: JkO2GXZqIOl6m1DntaZjgn1lVAX3sbVF  ← (l minúscula, no I mayúscula)
+MELI_REDIRECT_URI: https://landed-api-staging-dtugfril4a-uc.a.run.app/auth/mercadolibre/callback
+```
 
 ---
 

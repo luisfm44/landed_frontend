@@ -23,15 +23,16 @@ export function usdToCop(usd: number): number {
 }
 
 /**
- * Format a Colombian Peso amount in the local format: $6.200.000 COP.
+ * Format a Colombian Peso amount using the official COP currency format.
  * Primary display currency for Colombian users.
  */
 export function formatCop(amount: number): string {
-  const formatted = new Intl.NumberFormat("es-CO", {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-  return `$${formatted} COP`;
 }
 
 /**

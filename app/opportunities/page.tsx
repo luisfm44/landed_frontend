@@ -1,51 +1,69 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { OpportunityCard } from "@/components/opportunity-card";
-import { Opportunity } from "@/types/opportunity";
+import { DecisionCard } from "@/components/decision-card";
+import { Opportunity, DecisionResult, ImportScenario } from "@/types/opportunity";
 
 const API_URL = process.env.API_URL ?? "http://localhost:3001";
 
 interface BackendOpportunity {
-  productId: string;
   title: string;
   source: string;
   priceUsd: number;
   landedCostUsd: number;
   savingPct: number;
-  buyScore: number;
-  score?: number;
   recommended?: boolean;
-  listingCount?: number;
   productUrl?: string;
   shippingMethod?: string;
   pricingWarning?: string;
-  explanation?: string[];
-  estimatedAuctionUsd?: number;
   insight?: string;
 }
 
 function mapOpportunity(item: BackendOpportunity): Opportunity {
+  const method = (item.shippingMethod as "direct" | "locker") ?? "locker";
+  const landedCop = Math.round(item.landedCostUsd * 4100);
+  const localCop =
+    item.savingPct > 0 && item.savingPct < 1
+      ? Math.round(landedCop / (1 - item.savingPct))
+      : undefined;
+
+  const importScenario: ImportScenario = {
+    method,
+    totalCop: landedCop,
+    available: true,
+  };
+
+  const isWorthImporting = item.recommended ?? item.savingPct > 0.1;
+  const decisionType =
+    isWorthImporting
+      ? method === "direct"
+        ? "import_direct"
+        : "import_locker"
+      : "buy_local";
+
+  const reason =
+    item.insight ??
+    (isWorthImporting
+      ? localCop
+        ? `Ahorro de ${(localCop - landedCop).toLocaleString("es-CO")} COP`
+        : "Buena oportunidad de importación"
+      : "Más barato comprar en Colombia");
+
+  const decision: DecisionResult = {
+    recommended: decisionType,
+    reason,
+    importScenarios: [importScenario],
+    bestLocal: localCop ? { store: "Colombia", priceCop: localCop } : undefined,
+    savingsVsLocal: localCop ? localCop - landedCop : undefined,
+    warnings: item.pricingWarning ? [item.pricingWarning] : undefined,
+  };
+
   return {
     title: item.title,
-    price: item.priceUsd,
-    landedPrice: item.landedCostUsd,
-    savingsPercentage: item.savingPct,
-    score: item.score ?? item.buyScore,
-    type: item.estimatedAuctionUsd != null ? "auction" : "fixed",
+    priceUsd: item.priceUsd,
     externalUrl: item.productUrl ?? "",
     marketplace: item.source,
-    shippingMethod: item.shippingMethod,
-    pricingWarning: item.pricingWarning ?? undefined,
-    explanation:
-      item.explanation?.length
-        ? item.explanation
-        : item.insight
-        ? [item.insight]
-        : undefined,
-    listingsCount: item.listingCount,
-    worthImporting: item.recommended ?? item.savingPct > 0.1,
+    decision,
     isTopDeal: item.recommended ?? false,
-    estimatedFinalPrice: item.estimatedAuctionUsd,
   };
 }
 
@@ -98,7 +116,7 @@ export default async function OpportunitiesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {opportunities.map((o) => (
-            <OpportunityCard key={o.externalUrl || o.title} opportunity={o} />
+            <DecisionCard key={o.externalUrl || o.title} opportunity={o} />
           ))}
         </div>
       )}

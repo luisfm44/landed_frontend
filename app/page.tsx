@@ -3,32 +3,32 @@
 import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { SearchBar } from "@/components/search-bar";
-import { OpportunityCard } from "@/components/opportunity-card";
+import { DecisionCard } from "@/components/decision-card";
 import { OpportunityGridSkeleton } from "@/components/opportunity-card-skeleton";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearch } from "@/hooks/use-search";
 import { compareFetcher } from "@/lib/api";
 
-const cardContainer = {
+const cardContainer: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08 } },
 };
 
-const cardItem = {
+const cardItem: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.98, filter: "blur(6px)" },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
     filter: "blur(0px)",
-    transition: { duration: 0.4, ease: "easeOut" },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
 };
 
 function Home() {
@@ -253,7 +253,7 @@ function Home() {
                 <p className="text-2xl font-semibold text-[#64748B] dark:text-[#71717A] tabular-nums tracking-[-0.01em] mt-1 line-through decoration-[#CBD5E1] dark:decoration-[#3F3F46]">
                   $9.283.000 COP
                 </p>
-                <p className="text-xs text-[#94A3B8] mt-0.5">precio estimado tiendas locales</p>
+                <p className="text-xs text-[#94A3B8] mt-0.5">precio en tiendas locales</p>
               </div>
 
               <div className="space-y-2 text-sm text-[#64748B] dark:text-[#94A3B8]">
@@ -317,9 +317,9 @@ function Home() {
                       animate="show"
                       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                     >
-                      {results.map((opp, i) => (
-                        <motion.div key={i} variants={cardItem}>
-                          <OpportunityCard opportunity={opp} />
+                      {results.map((opp) => (
+                        <motion.div key={opp.externalUrl || opp.title} variants={cardItem}>
+                          <DecisionCard opportunity={opp} />
                         </motion.div>
                       ))}
                     </motion.div>

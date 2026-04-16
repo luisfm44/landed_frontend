@@ -1,30 +1,46 @@
-export type ListingType = "auction" | "fixed";
-export type Recommendation = "import" | "local";
+export type DecisionType =
+  | "buy_local"
+  | "import_direct"
+  | "import_locker"
+  | "not_recommended";
+
+export interface ImportScenario {
+  method: "direct" | "locker";
+  totalCop: number;
+  shippingTimeDays?: number;
+  available: boolean;
+}
+
+export interface LocalOffer {
+  store: string;
+  priceCop: number;
+  url?: string;
+}
+
+export interface ProductMeta {
+  /** Whether the seller explicitly ships to Colombia. undefined = unknown. */
+  shipsToColombia?: boolean;
+  /** Seller rating 0–100 (e.g. eBay feedback percentage). */
+  sellerRating?: number;
+  /** Product condition as reported by the marketplace. */
+  condition?: string;
+}
+
+export interface DecisionResult {
+  recommended: DecisionType;
+  reason: string;
+  importScenarios: ImportScenario[];
+  bestLocal?: LocalOffer;
+  savingsVsLocal?: number;
+  warnings?: string[];
+  meta?: ProductMeta;
+}
 
 export interface Opportunity {
   title: string;
-  price: number;
-  landedPrice: number;
-  savingsPercentage: number;
-  score: number;
-  type: ListingType;
+  priceUsd: number;
   externalUrl: string;
-  /** optional enrichment fields matching the backend model */
   marketplace?: string;
-  imageUrl?: string;
-  currency?: string;
-  shippingMethod?: string;
-  explanation?: string[];
-  pricingWarning?: string;
-  condition?: string;
-  location?: string;
-  recommendation?: Recommendation;
-  /** UI decision fields */
-  listingsCount?: number;
-  worthImporting?: boolean;
+  decision: DecisionResult;
   isTopDeal?: boolean;
-  /** auction-specific fields */
-  auctionEndsAt?: string;
-  currentBid?: number;
-  estimatedFinalPrice?: number;
 }

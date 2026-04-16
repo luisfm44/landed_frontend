@@ -36,7 +36,7 @@ export function OpportunityCardSkeleton({ index = 0 }: { index?: number }) {
         </div>
       </div>
 
-      {/* divider + score + title */}
+      {/* divider + title + meta */}
       <div className="border-t border-gray-200 dark:border-[#26262B] pt-4 space-y-3">
         <div className="space-y-1">
           <div className="flex justify-between">
