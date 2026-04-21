@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { DecisionCard } from "@/components/decision-card";
-import { Opportunity, DecisionResult, ImportScenario } from "@/types/opportunity";
+import {
+  Opportunity,
+  DecisionResult,
+  ImportScenario,
+  MarketSnapshot,
+} from "@/types/opportunity";
 
 const API_URL = process.env.API_URL ?? "http://localhost:3001";
 
@@ -16,6 +21,59 @@ interface BackendOpportunity {
   shippingMethod?: string;
   pricingWarning?: string;
   insight?: string;
+  marketSnapshot?: {
+    minPrice?: number;
+    maxPrice?: number;
+    medianPrice?: number;
+    sources?: number;
+    confidence?: string;
+    offers?: Array<{
+      source?: string;
+      store?: string;
+      priceCop?: number;
+      url?: string;
+    }>;
+  };
+}
+
+function normalizeConfidence(
+  confidence: string | undefined,
+): MarketSnapshot["confidence"] {
+  if (confidence === "high" || confidence === "medium" || confidence === "low") {
+    return confidence;
+  }
+  return "medium";
+}
+
+function mapMarketSnapshot(
+  snapshot: BackendOpportunity["marketSnapshot"],
+): MarketSnapshot | undefined {
+  if (!snapshot) return undefined;
+  const { minPrice, maxPrice, medianPrice, sources, confidence, offers } = snapshot;
+
+  if (
+    minPrice == null ||
+    maxPrice == null ||
+    medianPrice == null ||
+    sources == null
+  ) {
+    return undefined;
+  }
+
+  return {
+    minPrice,
+    maxPrice,
+    medianPrice,
+    sources,
+    confidence: normalizeConfidence(confidence),
+    offers: offers
+      ?.filter((offer) => offer.priceCop != null)
+      .map((offer) => ({
+        source: offer.source ?? offer.store ?? "Fuente local",
+        priceCop: offer.priceCop as number,
+        url: offer.url,
+      })),
+  };
 }
 
 function mapOpportunity(item: BackendOpportunity): Opportunity {
@@ -48,6 +106,8 @@ function mapOpportunity(item: BackendOpportunity): Opportunity {
         : "Buena oportunidad de importación"
       : "Más barato comprar en Colombia");
 
+  const marketSnapshot = mapMarketSnapshot(item.marketSnapshot);
+
   const decision: DecisionResult = {
     recommended: decisionType,
     reason,
@@ -55,6 +115,7 @@ function mapOpportunity(item: BackendOpportunity): Opportunity {
     bestLocal: localCop ? { store: "Colombia", priceCop: localCop } : undefined,
     savingsVsLocal: localCop ? localCop - landedCop : undefined,
     warnings: item.pricingWarning ? [item.pricingWarning] : undefined,
+    marketSnapshot,
   };
 
   return {

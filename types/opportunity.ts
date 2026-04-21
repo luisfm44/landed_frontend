@@ -17,6 +17,22 @@ export interface LocalOffer {
   url?: string;
 }
 
+export interface LocalMarketOffer {
+  source: string;
+  priceCop: number;
+  url?: string;
+}
+
+export interface MarketSnapshot {
+  minPrice: number;
+  maxPrice: number;
+  medianPrice: number;
+  sources: number;
+  confidence: "low" | "medium" | "high";
+  snapshotAgeMs?: number;
+  offers?: LocalMarketOffer[];
+}
+
 export interface ProductMeta {
   /** Whether the seller explicitly ships to Colombia. undefined = unknown. */
   shipsToColombia?: boolean;
@@ -34,6 +50,10 @@ export interface DecisionResult {
   savingsVsLocal?: number;
   warnings?: string[];
   meta?: ProductMeta;
+  marketSnapshot?: MarketSnapshot;
+  opportunityLevel?: "rare" | "good" | "neutral" | "bad";
+  opportunityLabel?: string;
+  dealScore?: number;
 }
 
 export interface Opportunity {

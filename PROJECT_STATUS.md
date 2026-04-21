@@ -1,8 +1,95 @@
 # Estado del Proyecto - Landed (Backend + Frontend)
 
-**Fecha:** 15 de Abril de 2026
+**Fecha:** 20 de Abril de 2026
 **Backend URL (staging):** `https://landed-api-staging-dtugfril4a-uc.a.run.app`
 **Frontend URL (staging):** `https://landed-frontend-staging-dtugfril4a-uc.a.run.app`
+
+---
+
+## ✅ Sesión 20 de Abril 2026 — DecisionCard market-aware + TopDeals feed
+
+### Resumen
+Refactor completo de `DecisionCard` para mostrar contexto de mercado real (`MarketSnapshot`), indicadores de confianza, badges de oportunidad y comparación dinámica de precios. Se creó el componente `TopDeals` para surfacear las mejores oportunidades en la home.
+
+### Archivos modificados
+
+#### `types/opportunity.ts`
+- `MarketSnapshot` — añadido `snapshotAgeMs?: number`
+- `DecisionResult` — añadidos `opportunityLevel?: "rare" | "good" | "neutral" | "bad"`, `opportunityLabel?: string`, `dealScore?: number`
+
+#### `components/decision-card.tsx`
+Refactor completo de la card. Nuevos helpers:
+- `getRecommendationCopy(recommended, savingsPct, opportunityLabel?)` — genera copy human-friendly con emoji: `🟢 Precio excepcional`, `🔵 Mejor comprar local`, `⚪ Compra indiferente`
+- `getOpportunityBadgeClasses(level)` — clases Tailwind por nivel: `rare` (rojo/bold), `good` (verde), `neutral` (gris), `bad` (rosa)
+- `getMarketTrustLine(confidence, sources, snapshotAgeMs?)` — retorna `{ text, tone: 'success'|'warning'|'muted' }`:
+  - `high` + reciente (<6h): `✅ Basado en N tiendas reales · actualizado hace Xh`
+  - `medium`: `🟡 Referencia de mercado (N tiendas)`
+  - `low`: `⚠️ Datos limitados`
+  - Si `snapshotAgeMs > 12h` → append `· puede estar desactualizado`
+- `getSourceBadge(source)` — badge colorizado: ML (amarillo/azul), FA (verde), AK (rojo), KT (naranja), fallback initials
+- `formatCopCompactMillions(amount)` — formato `$7.39M`
+- `toSavingsPct(savings, reference)` — calcula % de ahorro
+- `TRUST_TONE_CLASSES` — mapa `tone → clase Tailwind`
+
+Bloques UI (orden final):
+1. **Header**: marketplace label · título · precio USD · badge de recomendación (pill si tiene `opportunityLevel`) · subtexto de ahorro % si hay savings
+2. **Divider**
+3. **Situation**: icono + título del método de importación (sin reason text)
+4. **Context**: condición + seller rating (opcional)
+5. **Total importado** — valor en verde si es el menor, rojo si es el mayor vs precio típico
+6. **Mercado en Colombia** — precio típico grande (verde/rojo según comparación) + trust indicator
+7. **3 mejores ofertas locales** — badges de tienda, highlight emerald en index 0 + "Mejor precio local"
+8. **Warnings** con ⚠️
+9. **Ahorras** (verde) o **Más caro que el mercado** (ámbar) con subtexto `X% vs mercado local`
+10. **CTA** button
+
+Eliminados:
+- Sección "vs precio típico en Colombia" (fila standalone)
+- Filas "Tiendas analizadas" y "Confianza de datos"
+- Fila "Rango del mercado"
+- Texto "El mercado en Colombia está ~X% más caro"
+- Texto italic final (finalLine)
+- Texto de ahorro duplicado en header
+
+#### `components/top-deals.tsx` ← **nuevo**
+Feed compacto de mejores oportunidades para la home:
+- `filterAndRank()` — filtra `opportunityLevel: rare|good` + `confidence: high`, ordena por `dealScore` asc, límite 10
+- Cada row muestra: badge (`🔥 Top oportunidad` o `🟢 Buena compra`), nombre, `opportunityLabel · $X USD`, precio típico tachado, total importado, `−X%`
+- Glow rojo sutil para `rare`; borde estándar para `good`
+- Retorna `null` si no hay deals calificados
+
+#### `app/page.tsx`
+- Import de `TopDeals` y `MOCK_OPPORTUNITIES`
+- Nueva sección **"En este momento"** entre "Cómo funciona" y "Comparación en vivo", renderiza `<TopDeals opportunities={MOCK_OPPORTUNITIES} />`
+
+#### `lib/mock-opportunities.ts`
+Añadidos `opportunityLevel`, `opportunityLabel`, `dealScore` a 3 entries:
+- KEF R3 Near Mint → `rare` / `"Precio excepcional"` / `dealScore: 12` / reason actualizado a `$1.520.000 vs precio típico`
+- KEF R3 Walnut → `good` / `"Buen precio"` / `dealScore: 48` / reason actualizado a `$312.000 vs precio típico`
+- McIntosh MA352 → `good` / `"Buena oportunidad"` / `dealScore: 31`
+
+#### `lib/api.ts`
+- Flag `NEXT_PUBLIC_USE_MOCK_COMPARE=true` para activar mock fetcher en desarrollo
+
+### Lógica de color dinámica en precios
+| Valor | Color |
+|-------|-------|
+| `totalCop` (import) < `medianPrice` | Verde (es el menor) |
+| `totalCop` (import) > `medianPrice` | Rojo (es el mayor) |
+| `medianPrice` < `totalCop` | Verde (Colombia es más barato) |
+| `medianPrice` > `totalCop` | Rojo (Colombia es más caro) |
+
+### Estado al cierre de sesión
+- ✅ Sin errores TypeScript en todos los archivos modificados
+- ✅ Dev server corriendo en `http://localhost:3000`
+- ✅ Mock data completo con `marketSnapshot`, `opportunityLevel`, `dealScore`
+- ✅ `NEXT_PUBLIC_USE_MOCK_COMPARE=true` activo para pruebas locales
+- ✅ Commit y push a `main`
+
+### Pendientes
+- [ ] Conectar `TopDeals` a datos reales del backend (endpoint `GET /opportunities?level=rare,good`)
+- [ ] Backend debe enviar `opportunityLevel`, `opportunityLabel`, `dealScore`, `snapshotAgeMs` en el payload
+- [ ] Deploy a staging
 
 ---
 

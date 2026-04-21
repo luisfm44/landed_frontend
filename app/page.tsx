@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearch } from "@/hooks/use-search";
 import { compareFetcher } from "@/lib/api";
+import { TopDeals } from "@/components/top-deals";
+import { MOCK_OPPORTUNITIES } from "@/lib/mock-opportunities";
 
 const cardContainer: Variants = {
   hidden: {},
@@ -148,7 +150,24 @@ function Home() {
         </div>
       </section>
 
-      {/* 3. COMPARACIÓN EN VIVO */}
+      {/* 3. TOP DEALS FEED */}
+      <section className="bg-[#FAFAFA] dark:bg-[#0B0B0C] py-20 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
+        <div className="max-w-2xl mx-auto px-6">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+          >
+            <p className="text-[11px] font-bold text-[#2563EB] uppercase tracking-[0.18em] mb-3">
+              En este momento
+            </p>
+            <TopDeals opportunities={MOCK_OPPORTUNITIES} />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 4. COMPARACIÓN EN VIVO */}
       <section className="bg-white dark:bg-[#0B0B0C] py-24 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div

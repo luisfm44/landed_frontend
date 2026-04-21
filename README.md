@@ -16,6 +16,16 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Mock mode for cards (local testing)
+
+If you want to inspect the decision card states without backend availability, run with:
+
+```bash
+NEXT_PUBLIC_USE_MOCK_COMPARE=true npm run dev
+```
+
+In this mode, the home search uses `lib/mock-opportunities.ts` (including market snapshot and warnings data).
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
