@@ -1,8 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Opportunity, DecisionType, ImportScenario } from "@/types/opportunity";
+import { Opportunity, DecisionType, ImportScenario, RichLocalOffer } from "@/types/opportunity";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { getTrustBadgeConfig, getSnapshotFreshnessHint } from "@/lib/trust";
 import {
   ExternalLink,
   Star,
@@ -50,6 +51,12 @@ const SITUATION_CONFIG: Record<
     iconClass: "text-red-500 dark:text-red-400",
     ctaLabel: "Ver de todos modos",
   },
+  either: {
+    title: "Cualquiera es válido",
+    icon: ShoppingBag,
+    iconClass: "text-gray-500 dark:text-gray-400",
+    ctaLabel: "Ver oferta",
+  },
 };
 
 const MARKETPLACE_LABEL: Record<string, string> = {
@@ -59,17 +66,7 @@ const MARKETPLACE_LABEL: Record<string, string> = {
   usaudiomart: "US Audio Mart",
 };
 
-const CONFIDENCE_LABEL: Record<"low" | "medium" | "high", string> = {
-  low: "Baja",
-  medium: "Media",
-  high: "Alta",
-};
 
-const TRUST_TONE_CLASSES: Record<"success" | "warning" | "muted", string> = {
-  success: "text-emerald-700 dark:text-emerald-400",
-  warning: "text-amber-600 dark:text-amber-400",
-  muted: "text-[#94A3B8]",
-};
 
 const CONDITION_LABEL: Record<string, string> = {
   new: "Nuevo",
@@ -89,6 +86,12 @@ function getRelevantScenario(
   recommended: DecisionType,
   importScenarios: ImportScenario[],
 ): ImportScenario | undefined {
+  if (recommended === "either") {
+    // Show the cheapest available import scenario
+    const available = importScenarios.filter((s) => s.available);
+    if (available.length === 0) return undefined;
+    return available.reduce((a, b) => (a.totalCop <= b.totalCop ? a : b));
+  }
   const method =
     recommended === "import_direct"
       ? "direct"
@@ -120,6 +123,9 @@ function buildFinalLine(
   }
   if (recommended === "not_recommended") {
     return "No se recomienda esta importación.";
+  }
+  if (recommended === "either") {
+    return "Tanto importar como comprar local es viable.";
   }
   return null;
 }
@@ -155,6 +161,9 @@ function getRecommendationCopy(
   if (recommended === "buy_local") {
     return "🔵 Mejor comprar local";
   }
+  if (recommended === "either") {
+    return "⚪ Opciones equivalentes";
+  }
   return "⚪ Compra indiferente";
 }
 
@@ -171,41 +180,7 @@ function getOpportunityBadgeClasses(level: "rare" | "good" | "neutral" | "bad"):
   }
 }
 
-function getMarketTrustLine(
-  confidence: "low" | "medium" | "high",
-  sources: number,
-  snapshotAgeMs?: number,
-): { text: string; tone: "success" | "warning" | "muted" } {
-  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
-  const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
-  const ageHours = snapshotAgeMs != null ? Math.round(snapshotAgeMs / (60 * 60 * 1000)) : null;
-  const isRecent = snapshotAgeMs == null || snapshotAgeMs < SIX_HOURS_MS;
-  const isStale = snapshotAgeMs != null && snapshotAgeMs > TWELVE_HOURS_MS;
-
-  let text: string;
-  let tone: "success" | "warning" | "muted";
-
-  if (confidence === "high" && isRecent) {
-    text = ageHours != null
-      ? `✅ Basado en ${sources} tiendas reales · actualizado hace ${ageHours}h`
-      : `✅ Basado en ${sources} tiendas reales`;
-    tone = "success";
-  } else if (confidence === "medium") {
-    text = `🟡 Referencia de mercado (${sources} tiendas)`;
-    tone = "warning";
-  } else {
-    text = "⚠️ Datos limitados";
-    tone = "warning";
-  }
-
-  if (isStale && confidence !== "low") {
-    text += " · puede estar desactualizado";
-    tone = "warning";
-  }
-
-  return { text, tone };
-}
 
 function getSourceBadge(source: string): { label: string; className: string } {
   const normalized = source.toLowerCase();
@@ -253,18 +228,24 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
     reason,
     importScenarios,
     bestLocal,
+    bestLocalOffer,
+    localOffers,
     savingsVsLocal,
     warnings,
     meta,
     marketSnapshot,
     opportunityLevel,
     opportunityLabel,
+    marketConfidence,
+    snapshotStatus,
+    snapshotAgeMs,
+    trustMessage,
   } = decision;
 
   const situation = SITUATION_CONFIG[recommended];
   const SituationIcon = situation.icon;
   const isWorthImporting =
-    recommended === "import_direct" || recommended === "import_locker";
+    recommended === "import_direct" || recommended === "import_locker" || recommended === "either";
 
   const relevantScenario = getRelevantScenario(recommended, importScenarios);
 
@@ -278,15 +259,40 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
 
   const savingsPct = toSavingsPct(computedSavingsVsLocal, typicalComparisonPrice);
   const finalLine = buildFinalLine(recommended, computedSavingsVsLocal);
-  const compactOffers =
-    marketSnapshot?.offers
-      ?.slice()
-      .sort((left, right) => left.priceCop - right.priceCop)
-      .slice(0, 3) ?? [];
+
+  // Top 3 offers — prefer localOffers list, fall back to marketSnapshot.offers
+  const rawOffersForList: Array<{ source: string; priceCop: number; url?: string }> =
+    localOffers && localOffers.length > 0
+      ? localOffers.map((o) => ({
+          source: o.store ?? o.source,
+          priceCop: o.priceCop,
+          url: o.url,
+        }))
+      : (marketSnapshot?.offers ?? []);
+  const compactOffers = rawOffersForList
+    .slice()
+    .sort((a, b) => a.priceCop - b.priceCop)
+    .slice(0, 3);
+
+  // Best local offer for explicit comparison row
+  // Priority: bestLocal → bestLocalOffer → cheapest in compactOffers
+  const richBestLocalName =
+    bestLocalOffer?.store ?? bestLocalOffer?.source;
+  const displayBestLocal: { name: string; priceCop: number; url?: string } | undefined =
+    bestLocal
+      ? { name: bestLocal.store, priceCop: bestLocal.priceCop, url: undefined }
+      : richBestLocalName
+      ? { name: richBestLocalName, priceCop: bestLocalOffer!.priceCop, url: bestLocalOffer!.url }
+      : compactOffers.length > 0
+      ? { name: compactOffers[0].source, priceCop: compactOffers[0].priceCop, url: compactOffers[0].url }
+      : undefined;
+
   const recommendationCopy = getRecommendationCopy(recommended, savingsPct, opportunityLabel);
-  const trustLine = marketSnapshot
-    ? getMarketTrustLine(marketSnapshot.confidence, marketSnapshot.sources, marketSnapshot.snapshotAgeMs)
-    : null;
+  const trustBadge = marketConfidence ? getTrustBadgeConfig(marketConfidence) : null;
+  const freshnessHint = getSnapshotFreshnessHint(
+    snapshotStatus,
+    snapshotAgeMs ?? marketSnapshot?.snapshotAgeMs,
+  );
   const marketPremiumPct =
     relevantScenario && typicalComparisonPrice != null && relevantScenario.totalCop > 0
       ? ((typicalComparisonPrice - relevantScenario.totalCop) / relevantScenario.totalCop) * 100
@@ -357,6 +363,37 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
               </span>
             )}
 
+            {/* Trust badge */}
+            {trustBadge && (
+              <span
+                className={cn(
+                  "inline-flex items-center self-start rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                  trustBadge.className,
+                )}
+              >
+                {trustBadge.label}
+              </span>
+            )}
+
+            {/* Primary trust explanation */}
+            {trustMessage && (
+              <p className="text-[11px] text-[#94A3B8] leading-snug">{trustMessage}</p>
+            )}
+
+            {/* Snapshot freshness hint */}
+            {freshnessHint && (
+              <p
+                className={cn(
+                  "text-[11px]",
+                  freshnessHint.isWarning
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-emerald-600 dark:text-emerald-400",
+                )}
+              >
+                {freshnessHint.isWarning ? "⚠ " : "✓ "}
+                {freshnessHint.text}
+              </p>
+            )}
           </div>
 
         </div>
@@ -416,6 +453,29 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
 
 
 
+        {/* ── F: Best local offer comparison ── */}
+        {displayBestLocal && (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 rounded-xl bg-[#F1F5F9] dark:bg-white/[0.05] border border-[#CBD5E1] dark:border-white/[0.12] px-4 py-3">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase tracking-wider">
+                vs mejor precio local
+              </span>
+              <span className="text-sm text-[#0F172A] dark:text-[#F5F5F7]">
+                {displayBestLocal.name}
+              </span>
+            </div>
+            <span className={cn(
+              "justify-self-end self-center text-right text-sm font-bold tabular-nums whitespace-nowrap",
+              relevantScenario && relevantScenario.totalCop < displayBestLocal.priceCop
+                ? "text-emerald-700 dark:text-emerald-400"
+                : "text-[#0F172A] dark:text-[#F5F5F7]",
+            )}>
+              {formatCop(displayBestLocal.priceCop)}
+            </span>
+          </div>
+        )}
+
+        {/* ── G: Market snapshot ── */}
         {marketSnapshot && (
           <div className="flex flex-col gap-1.5 rounded-xl border border-[#CBD5E1] dark:border-white/[0.12] bg-[#F1F5F9] dark:bg-white/[0.05] px-4 py-3">
             <p className="text-[10px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase tracking-wider">
@@ -423,7 +483,7 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
             </p>
             {/* Median price — primary emphasis */}
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4">
-              <span className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">Precio típico en Colombia</span>
+              <span className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">Precio típico</span>
               <span className={cn(
                 "justify-self-end text-right text-base font-bold tabular-nums whitespace-nowrap",
                 relevantScenario == null
@@ -435,11 +495,33 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
                 {formatCop(marketSnapshot.medianPrice)}
               </span>
             </div>
-            {trustLine && (
-              <p className={cn("mt-1 text-[11px] font-medium", TRUST_TONE_CLASSES[trustLine.tone])}>
-                {trustLine.text}
-              </p>
-            )}
+            {/* Price range */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4">
+              <span className="text-xs text-[#64748B] dark:text-[#94A3B8]">Rango del mercado</span>
+              <span className="justify-self-end text-right text-xs tabular-nums text-[#64748B] dark:text-[#94A3B8] whitespace-nowrap">
+                {formatCopCompactMillions(marketSnapshot.minPrice)} – {formatCopCompactMillions(marketSnapshot.maxPrice)}
+              </span>
+            </div>
+            {/* Sources + confidence */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <span className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                {marketSnapshot.sources} {marketSnapshot.sources === 1 ? "tienda analizada" : "tiendas analizadas"}
+              </span>
+              <span className={cn(
+                "text-xs font-medium",
+                marketSnapshot.confidence === "high"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : marketSnapshot.confidence === "medium"
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-[#94A3B8]",
+              )}>
+                {marketSnapshot.confidence === "high"
+                  ? "✅ Confianza alta"
+                  : marketSnapshot.confidence === "medium"
+                  ? "🟡 Confianza media"
+                  : "⚠ Datos limitados"}
+              </span>
+            </div>
           </div>
         )}
 

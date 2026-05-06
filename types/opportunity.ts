@@ -2,6 +2,7 @@ export type DecisionType =
   | "buy_local"
   | "import_direct"
   | "import_locker"
+  | "either"
   | "not_recommended";
 
 export interface ImportScenario {
@@ -21,6 +22,17 @@ export interface LocalMarketOffer {
   source: string;
   priceCop: number;
   url?: string;
+}
+
+/** Rich local Colombian offer as returned by the backend decision engine. */
+export interface RichLocalOffer {
+  source: string;
+  store?: string;
+  priceCop: number;
+  title?: string;
+  url?: string;
+  trustLevel?: "high" | "medium";
+  sellerRating?: number;
 }
 
 export interface MarketSnapshot {
@@ -47,6 +59,10 @@ export interface DecisionResult {
   reason: string;
   importScenarios: ImportScenario[];
   bestLocal?: LocalOffer;
+  /** Full rich best local offer as returned by the backend. */
+  bestLocalOffer?: RichLocalOffer;
+  /** Full list of local offers as returned by the backend. */
+  localOffers?: RichLocalOffer[];
   savingsVsLocal?: number;
   warnings?: string[];
   meta?: ProductMeta;
@@ -54,6 +70,16 @@ export interface DecisionResult {
   opportunityLevel?: "rare" | "good" | "neutral" | "bad";
   opportunityLabel?: string;
   dealScore?: number;
+  /** Overall market confidence level for the recommendation. */
+  marketConfidence?: "low" | "medium" | "high";
+  /** Whether the local price snapshot was a cache hit or is stale. */
+  snapshotStatus?: "hit" | "stale" | "miss";
+  /** Age of the price snapshot in milliseconds. */
+  snapshotAgeMs?: number;
+  /** Human-readable trust explanation for the recommendation. */
+  trustMessage?: string;
+  /** Primary local price source identifier (e.g. "Mercado Libre"). */
+  localPriceSource?: string;
 }
 
 export interface Opportunity {

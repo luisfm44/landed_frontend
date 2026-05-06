@@ -5,6 +5,7 @@ import { Opportunity, DecisionType } from "@/types/opportunity";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ExternalLink, AlertTriangle } from "lucide-react";
 import { formatCop, formatUsd } from "@/lib/format";
+import { getTrustBadgeConfig, getSnapshotFreshnessHint } from "@/lib/trust";
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -54,12 +55,29 @@ const MARKETPLACE_LABELS: Record<string, string> = {
 export function OpportunityCard({ opportunity }: OpportunityCardProps) {
   const { title, priceUsd, externalUrl, marketplace, decision, isTopDeal } =
     opportunity;
-  const { recommended, reason, importScenarios, bestLocal, savingsVsLocal, warnings } =
-    decision;
+  const {
+    recommended,
+    reason,
+    importScenarios,
+    bestLocal,
+    savingsVsLocal,
+    warnings,
+    marketSnapshot,
+    marketConfidence,
+    snapshotStatus,
+    snapshotAgeMs,
+    trustMessage,
+  } = decision;
 
   const config = DECISION_CONFIG[recommended];
   const isWorthImporting =
     recommended === "import_direct" || recommended === "import_locker";
+
+  const trustBadge = marketConfidence ? getTrustBadgeConfig(marketConfidence) : null;
+  const freshnessHint = getSnapshotFreshnessHint(
+    snapshotStatus,
+    snapshotAgeMs ?? marketSnapshot?.snapshotAgeMs,
+  );
 
   const availableScenarios = importScenarios.filter((s) => s.available);
 
@@ -112,6 +130,38 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
           <p className="text-sm font-semibold">{config.label}</p>
           <p className="text-xs mt-0.5 opacity-80">{reason}</p>
         </div>
+
+        {/* ── Trust context ── */}
+        {(trustBadge || trustMessage || freshnessHint) && (
+          <div className="flex flex-col gap-1 pl-0.5">
+            {trustBadge && (
+              <span
+                className={cn(
+                  "inline-flex items-center self-start rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                  trustBadge.className,
+                )}
+              >
+                {trustBadge.label}
+              </span>
+            )}
+            {trustMessage && (
+              <p className="text-[11px] text-[#94A3B8] leading-snug">{trustMessage}</p>
+            )}
+            {freshnessHint && (
+              <p
+                className={cn(
+                  "text-[11px]",
+                  freshnessHint.isWarning
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-emerald-600 dark:text-emerald-400",
+                )}
+              >
+                {freshnessHint.isWarning ? "⚠ " : "✓ "}
+                {freshnessHint.text}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* ── Import scenarios ── */}
         {availableScenarios.length > 0 && (

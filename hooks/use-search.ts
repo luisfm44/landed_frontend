@@ -63,6 +63,8 @@ export function useSearch({
 }: UseSearchOptions = {}): UseSearchReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   const [query, setQueryRaw] = useState<string>(
     () => searchParams.get("q") ?? ""
@@ -92,7 +94,7 @@ export function useSearch({
       if (!trimmed) return;
 
       // Update URL without full navigation
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParamsRef.current.toString());
       params.set("q", trimmed);
       router.replace(`?${params.toString()}`, { scroll: false });
 
@@ -116,7 +118,7 @@ export function useSearch({
         if (id === requestId.current) setIsLoading(false);
       }
     },
-    [fetcher, router, searchParams, scrollToResults]
+    [fetcher, router, scrollToResults]
   );
 
   /** Public: trigger search explicitly (button / Enter). */
@@ -142,7 +144,7 @@ export function useSearch({
 
   /** Run initial search if URL already has ?q= (e.g. shared link) */
   useEffect(() => {
-    const initial = searchParams.get("q");
+    const initial = searchParamsRef.current.get("q");
     if (initial) {
       setQueryRaw(initial);
       executeSearch(initial);
@@ -155,10 +157,10 @@ export function useSearch({
     setResults(null);
     setError(null);
     setIsLoading(false);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParamsRef.current.toString());
     params.delete("q");
     router.replace(`?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  }, [router]);
 
   return { query, setQuery, results, isLoading, error, search, reset };
 }

@@ -8,6 +8,7 @@ import { ExternalLink } from "lucide-react";
 interface TopDealsProps {
   opportunities: Opportunity[];
   className?: string;
+  isLoading?: boolean;
 }
 
 function toSavingsPct(savings: number | undefined, reference: number | undefined): number | null {
@@ -19,8 +20,13 @@ function filterAndRank(opportunities: Opportunity[]): Opportunity[] {
   return opportunities
     .filter((opp) => {
       const level = opp.decision.opportunityLevel;
-      const confidence = opp.decision.marketSnapshot?.confidence;
-      return (level === "rare" || level === "good") && confidence === "high";
+      const confidence =
+        opp.decision.marketConfidence ?? opp.decision.marketSnapshot?.confidence;
+      // Accept high-confidence deals, or any deal with opportunityLevel when confidence is absent
+      return (
+        (level === "rare" || level === "good") &&
+        (confidence === "high" || confidence == null)
+      );
     })
     .sort((a, b) => {
       const scoreA = a.decision.dealScore ?? Infinity;
@@ -30,8 +36,28 @@ function filterAndRank(opportunities: Opportunity[]): Opportunity[] {
     .slice(0, 10);
 }
 
-export function TopDeals({ opportunities, className }: TopDealsProps) {
+export function TopDeals({ opportunities, className, isLoading }: TopDealsProps) {
   const deals = filterAndRank(opportunities);
+
+  if (isLoading) {
+    return (
+      <section className={cn("flex flex-col gap-3", className)}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-[#0F172A] dark:text-[#F5F5F7] tracking-tight">
+            Mejores oportunidades ahora
+          </h2>
+        </div>
+        <ul className="flex flex-col gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li
+              key={i}
+              className="h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#26262B] bg-[#F1F5F9] dark:bg-white/[0.03] animate-pulse"
+            />
+          ))}
+        </ul>
+      </section>
+    );
+  }
 
   if (deals.length === 0) return null;
 

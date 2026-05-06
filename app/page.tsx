@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { SearchBar } from "@/components/search-bar";
 import { DecisionCard } from "@/components/decision-card";
@@ -8,9 +8,8 @@ import { OpportunityGridSkeleton } from "@/components/opportunity-card-skeleton"
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearch } from "@/hooks/use-search";
-import { compareFetcher } from "@/lib/api";
+import { compareFetcher, getTopDeals } from "@/lib/api";
 import { TopDeals } from "@/components/top-deals";
-import { MOCK_OPPORTUNITIES } from "@/lib/mock-opportunities";
 
 const cardContainer: Variants = {
   hidden: {},
@@ -40,6 +39,16 @@ function Home() {
     fetcher: compareFetcher,
     resultsAnchor: "#results",
   });
+
+  const [topDeals, setTopDeals] = useState<import("@/types/opportunity").Opportunity[]>([]);
+  const [topDealsLoading, setTopDealsLoading] = useState(true);
+
+  useEffect(() => {
+    getTopDeals()
+      .then(setTopDeals)
+      .catch(() => setTopDeals([]))
+      .finally(() => setTopDealsLoading(false));
+  }, []);
 
   return (
     <>
@@ -162,7 +171,7 @@ function Home() {
             <p className="text-[11px] font-bold text-[#2563EB] uppercase tracking-[0.18em] mb-3">
               En este momento
             </p>
-            <TopDeals opportunities={MOCK_OPPORTUNITIES} />
+            <TopDeals opportunities={topDeals} isLoading={topDealsLoading} />
           </motion.div>
         </div>
       </section>
