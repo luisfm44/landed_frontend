@@ -214,8 +214,12 @@ export function mapBackendTopDealItem(item: BackendTopDealItem): Opportunity {
 
 /** Map a CompareResultItem (from /compare) to Opportunity. */
 function mapCompareItem(item: CompareResultItem, isTopDeal = false): Opportunity {
-  // Build marketSnapshot from marketSummary (flat format sent by backend)
-  const marketSnapshot = mapBackendMarketSnapshot(item.marketSummary);
+  // Build marketSnapshot from marketSummary; propagate decision.marketConfidence so the
+  // market panel and the trust badge always show the same confidence level.
+  const marketSnapshot = mapBackendMarketSnapshotWithConfidence(
+    item.marketSummary,
+    item.decision.marketConfidence,
+  );
 
   const decision: DecisionResult = {
     ...item.decision,
