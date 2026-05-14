@@ -12,11 +12,58 @@ interface CompareResultItem {
   marketSummary?: BackendMarketSnapshot;
 }
 
+// ─── Search result payload types (new structured compare response) ────────────
+
+export interface ImportedOffer {
+  type: 'imported';
+  marketplace: string;
+  title: string;
+  priceUsd: number;
+  productUrl: string;
+  totalPriceCop: number;
+  breakdown: {
+    productCop: number;
+    shippingCop: number;
+    taxesCop: number;
+  };
+  method: 'direct' | 'locker';
+  savingsCop?: number;
+  savingsPct?: number;
+}
+
+export interface LocalStoreOffer {
+  type: 'local';
+  store: string;
+  priceCop: number;
+  totalPriceCop: number;
+  url?: string;
+}
+
+export type AnyOffer = ImportedOffer | LocalStoreOffer;
+
+export interface WinnerInfo {
+  type: 'import' | 'local';
+  title: string;
+  totalPriceCop: number;
+  bestImportedTotalCop: number;
+  bestLocalPriceCop: number;
+  savingsCop: number;
+  savingsPct: number;
+}
+
+export interface SearchResultPayload {
+  winner: WinnerInfo | null;
+  topImported: ImportedOffer[];
+  topLocal: LocalStoreOffer[];
+  otherOffers: AnyOffer[];
+}
+
 interface CompareResponse {
   query: string;
   total: number;
   results: CompareResultItem[];
   bestOption: CompareResultItem | null;
+  searchResult: SearchResultPayload;
 }
 
 // ─── Top-deals / opportunities endpoint types ────────────────────────────────
@@ -275,6 +322,41 @@ export async function searchProducts(q: string): Promise<Opportunity[]> {
   return data.results.map((item) =>
     mapCompareItem(item, item.productUrl === bestUrl),
   );
+}
+
+/** Full compare result — returns mapped opportunities AND the structured searchResult payload. */
+export async function searchProductsFull(
+  q: string,
+): Promise<{ opportunities: Opportunity[]; searchResult: SearchResultPayload }> {
+  if (USE_MOCK_COMPARE) {
+    const opportunities = await mockCompareFetcher(q);
+    return {
+      opportunities,
+      searchResult: { winner: null, topImported: [], topLocal: [], otherOffers: [] },
+    };
+  }
+
+  const res = await fetch(`/api/compare?q=${encodeURIComponent(q)}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Error ${res.status} al buscar`);
+  }
+
+  const data: CompareResponse = await res.json();
+  const bestUrl = data.bestOption?.productUrl;
+  const opportunities = data.results.map((item) =>
+    mapCompareItem(item, item.productUrl === bestUrl),
+  );
+  const searchResult: SearchResultPayload = data.searchResult ?? {
+    winner: null,
+    topImported: [],
+    topLocal: [],
+    otherOffers: [],
+  };
+  return { opportunities, searchResult };
 }
 
 /** Backward-compatible alias — keeps existing useSearch wiring intact. */

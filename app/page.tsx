@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { SearchBar } from "@/components/search-bar";
 import { DecisionCard } from "@/components/decision-card";
@@ -8,8 +8,9 @@ import { OpportunityGridSkeleton } from "@/components/opportunity-card-skeleton"
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearch } from "@/hooks/use-search";
-import { compareFetcher, getTopDeals } from "@/lib/api";
+import { searchProductsFull, getTopDeals, type SearchResultPayload } from "@/lib/api";
 import { TopDeals } from "@/components/top-deals";
+import { SearchResultsLayout } from "@/components/search-results-layout";
 
 const cardContainer: Variants = {
   hidden: {},
@@ -35,8 +36,19 @@ const fadeUp: Variants = {
 function Home() {
   const t = useTranslations("home");
 
+  const [searchResult, setSearchResult] = useState<SearchResultPayload | null>(null);
+
+  const wrappedFetcher = useCallback(
+    async (q: string) => {
+      const { opportunities, searchResult: sr } = await searchProductsFull(q);
+      setSearchResult(sr);
+      return opportunities;
+    },
+    [],
+  );
+
   const { query, setQuery, results, isLoading: isSearching, error, search } = useSearch({
-    fetcher: compareFetcher,
+    fetcher: wrappedFetcher,
     resultsAnchor: "#results",
   });
 
@@ -339,18 +351,22 @@ function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                   >
-                    <motion.div
-                      variants={cardContainer}
-                      initial="hidden"
-                      animate="show"
-                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                    >
-                      {results.map((opp) => (
-                        <motion.div key={opp.externalUrl || opp.title} variants={cardItem}>
-                          <DecisionCard opportunity={opp} />
-                        </motion.div>
-                      ))}
-                    </motion.div>
+                    {searchResult ? (
+                      <SearchResultsLayout data={searchResult} />
+                    ) : (
+                      <motion.div
+                        variants={cardContainer}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                      >
+                        {results.map((opp) => (
+                          <motion.div key={opp.externalUrl || opp.title} variants={cardItem}>
+                            <DecisionCard opportunity={opp} />
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
