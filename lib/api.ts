@@ -20,6 +20,7 @@ export interface ImportedOffer {
   title: string;
   priceUsd: number;
   productUrl: string;
+  imageUrl?: string;
   totalPriceCop: number;
   breakdown: {
     productCop: number;
@@ -37,6 +38,7 @@ export interface LocalStoreOffer {
   priceCop: number;
   totalPriceCop: number;
   url?: string;
+  imageUrl?: string;
 }
 
 export type AnyOffer = ImportedOffer | LocalStoreOffer;
@@ -56,6 +58,7 @@ export interface SearchResultPayload {
   topImported: ImportedOffer[];
   topLocal: LocalStoreOffer[];
   otherOffers: AnyOffer[];
+  productImageUrl?: string;
 }
 
 interface CompareResponse {

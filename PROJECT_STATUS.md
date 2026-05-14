@@ -1,6 +1,99 @@
 # Estado del Proyecto - Landed (Backend + Frontend)
 
-**Fecha:** 20 de Abril de 2026
+**Fecha:** 13 de Mayo de 2026
+**Backend URL (staging):** `https://landed-api-staging-dtugfril4a-uc.a.run.app`
+**Frontend URL (staging):** `https://landed-frontend-staging-dtugfril4a-uc.a.run.app`
+
+---
+
+## ✅ Sesión 13 de Mayo 2026 — Rediseño UI completo + filtro de relevancia + propagación de imágenes
+
+### Resumen
+Rediseño completo de la página de resultados de búsqueda basado en mockup. Se implementó el layout `SearchResultsLayout` con 4 secciones separadas. Se corrigió el filtro de relevancia en el backend para eliminar accesorios de los resultados. Se propagó el campo `imageUrl` desde eBay hasta el frontend.
+
+### Archivos modificados — Backend (`/Documents/landed/backend/landed-backend`)
+
+#### `src/common/models/product.model.ts`
+- Añadido `imageUrl?: string` a la interfaz `NormalizedProduct`
+
+#### `src/fetchers/ebay/ebay.fetcher.ts`
+- Mapea `item.image?.imageUrl` → `imageUrl` en el producto retornado
+
+#### `src/crawler/workers/ebay.worker.ts`
+- `mapProductToRawListing` ahora incluye `image: product.imageUrl` en el campo `data`
+
+#### `src/crawler/services/listing.service.ts`
+- `entityToModel`: ya incluía `image: entity.image`
+- `modelToEntity`: añadido `entity.image = listing.image ?? ''` (fix — antes no persistía la imagen)
+
+#### `src/compare/compare.service.ts`
+- Interfaces `ImportedOffer`, `LocalStoreOffer`, `SearchResultPayload`, `CompareResultItem` — añadido `imageUrl?: string`
+- `SearchResultPayload` — añadido `productImageUrl?: string`
+- **Filtro de relevancia** (`isRelevantListing()`): nuevo método privado que:
+  - Requiere todos los tokens del query en el título
+  - Descarta accesorios con prefijos: `remote control`, `stand for`, `replacement`, `cable for`, etc.
+  - Descarta patrón "XYZ for [producto]"
+  - Fallback: si < 3 resultados relevantes, usa todos
+- `buildSearchResultPayload()`: propagación de `imageUrl` y `productImageUrl`
+
+### Archivos modificados — Frontend (`/Documents/landed/landed-frontend`)
+
+#### `next.config.ts`
+- Añadido `images.remotePatterns` para dominios eBay, Reverb, Audiogon, USAudioMart
+
+#### `lib/api.ts`
+- `ImportedOffer`, `LocalStoreOffer`, `SearchResultPayload` — añadido `imageUrl?` y `productImageUrl?`
+
+#### `app/page.tsx`
+- Pasa `query` prop a `SearchResultsLayout`
+
+#### `components/search-results-layout.tsx`
+- Acepta `query?: string`
+- Split de `otherOffers` en `otherImported` y `otherLocal`
+- Siempre renderiza `TopLocal` (empty state cuando no hay datos)
+- Dos secciones separadas: "3. Más opciones importadas" y "4. Más opciones locales"
+
+#### `components/winner-banner.tsx`
+- Layout 3 columnas: imagen producto | info + badges | decisión
+- Imagen siempre visible (placeholder 🎵 si no hay URL)
+- Badges en fila horizontal de pills
+- Barra de comparación siempre visible — muestra "No hay en tiendas locales" cuando `bestLocalPriceCop = 0`
+- VS como círculo con fondo sólido centrado sobre la línea divisoria
+
+#### `components/top-imported.tsx`
+- Cards con logo de marketplace (eBay multicolor, Amazon naranja, Reverb teal, etc.)
+- Imagen del producto con fallback emoji
+- Badge "MEJOR IMPORTADO" movido al cuerpo de la card (ya no tapa el logo)
+- Breakdown tabla: producto + envío + impuestos + total
+- Callout de ahorro vs mejor local
+
+#### `components/top-local.tsx`
+- Avatar de tienda (iniciales con colores)
+- Imagen del producto (usa `offer.imageUrl ?? productImageUrl`)
+- Checkmarks: Producto nuevo / Garantía oficial
+- **Empty state** cuando `offers.length === 0`: recuadro punteado con mensaje explicativo
+
+#### `components/other-offers-table.tsx`
+- Props `title`, `subtitle`, `emptyMessage` configurables
+- Eliminadas tabs de filtro (innecesarias con secciones separadas)
+- `emptyMessage`: muestra empty state con 🏪 en lugar de retornar null
+- Badges de tienda colorizados por marketplace
+- Columna "VS Mejor local" con formato "Ahorra $X (Y%)" o "$X más caro (Y% más)"
+- Numeración configurada por `startIndex`
+
+### Estado al cierre de sesión
+- ✅ Sin errores TypeScript en todos los archivos modificados
+- ✅ Backend corriendo en Docker puerto 3001 — filtro de relevancia activo
+- ✅ Frontend corriendo en puerto 3000 — hot-reload activo
+- ✅ Búsqueda "KEF LS50": 39 resultados limpios (0 accesorios), 3 topImported, 0 topLocal (empty state)
+- ✅ Commit y push a `main`
+
+### Pendientes
+- [ ] Re-crawl para poblar `image` en listings existentes (fix solo aplica a nuevos crawls)
+- [ ] Deploy a staging (frontend + backend)
+- [ ] Tiendas locales colombianas con datos reales (MercadoLibre bloqueado por IP GCP)
+
+
 **Backend URL (staging):** `https://landed-api-staging-dtugfril4a-uc.a.run.app`
 **Frontend URL (staging):** `https://landed-frontend-staging-dtugfril4a-uc.a.run.app`
 

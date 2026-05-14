@@ -352,7 +352,7 @@ function Home() {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                   >
                     {searchResult ? (
-                      <SearchResultsLayout data={searchResult} />
+                      <SearchResultsLayout data={searchResult} query={query} />
                     ) : (
                       <motion.div
                         variants={cardContainer}
