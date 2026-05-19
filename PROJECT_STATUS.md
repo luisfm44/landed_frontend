@@ -6,6 +6,49 @@
 
 ---
 
+## ✅ Sesión 18 de Mayo 2026 — Limpieza de home + explicación genérica + tarjetas con imágenes más grandes
+
+### Resumen
+Se ajustó la home para que la explicación no parezca un resultado real de una búsqueda específica. Se eliminó el bloque vacío "En este momento", se dejó una sección genérica de comparación/decisión y se aumentó el tamaño de las imágenes en las tarjetas de importados y locales.
+
+### Archivos modificados — Frontend (`/Documents/landed/landed-frontend`)
+
+#### `app/page.tsx`
+- Eliminada la sección "En este momento" / `TopDeals` del home.
+- Eliminado el fetch `getTopDeals()` en la carga inicial de la página.
+- Reemplazada la explicación vieja tipo ejemplo específico por una sección genérica:
+  - Título: "Comparamos y decidimos por ti"
+  - Producto genérico: "Producto de audio"
+  - Comparación simple: mejor importado vs mejor local
+  - Recomendación genérica: "Conviene importar"
+- Eliminado el texto "Resultado actual" para evitar confusión con resultados reales.
+- Eliminados ejemplos con productos/marcas específicas como Bose o KEF en esa explicación.
+
+#### `components/top-imported.tsx`
+- Aumentada el área visual de imagen en tarjetas importadas:
+  - Contenedor: `h-36` → `h-52 sm:h-56`
+  - Imagen: `w-28 h-28` → `w-40 h-40 sm:w-44 sm:h-44`
+- Aumentado también el placeholder cuando no hay imagen.
+
+#### `components/top-local.tsx`
+- Aumentada el área visual de imagen en tarjetas locales:
+  - Contenedor: `h-36` → `h-52 sm:h-56`
+  - Imagen: `w-28 h-28` → `w-40 h-40 sm:w-44 sm:h-44`
+- Aumentado también el placeholder cuando no hay imagen.
+
+### Verificación
+- ✅ `npm run lint`
+- ✅ `npm run build`
+- ✅ Revisión en `localhost:3000`: ya no aparece "En este momento" ni "Resultado actual"; la sección pasa directo de "How it works" a la explicación genérica.
+
+### Notas para continuar
+- El backend sigue corriendo por Docker en `localhost:3001`.
+- Redis fue verificado: responde `PONG` y el cache de `/search` funciona.
+- El endpoint rápido para resultados con imágenes desde base es `/crawler/listings/search`.
+- Quedan cambios locales en otros componentes que no fueron parte de esta sesión; no se deben mezclar sin revisarlos.
+
+---
+
 ## ✅ Sesión 13 de Mayo 2026 — Rediseño UI completo + filtro de relevancia + propagación de imágenes
 
 ### Resumen

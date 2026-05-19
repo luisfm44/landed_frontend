@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { SearchBar } from "@/components/search-bar";
 import { DecisionCard } from "@/components/decision-card";
@@ -8,8 +8,7 @@ import { OpportunityGridSkeleton } from "@/components/opportunity-card-skeleton"
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSearch } from "@/hooks/use-search";
-import { searchProductsFull, getTopDeals, type SearchResultPayload } from "@/lib/api";
-import { TopDeals } from "@/components/top-deals";
+import { searchProductsFull, type SearchResultPayload } from "@/lib/api";
 import { SearchResultsLayout } from "@/components/search-results-layout";
 
 const cardContainer: Variants = {
@@ -51,16 +50,6 @@ function Home() {
     fetcher: wrappedFetcher,
     resultsAnchor: "#results",
   });
-
-  const [topDeals, setTopDeals] = useState<import("@/types/opportunity").Opportunity[]>([]);
-  const [topDealsLoading, setTopDealsLoading] = useState(true);
-
-  useEffect(() => {
-    getTopDeals()
-      .then(setTopDeals)
-      .catch(() => setTopDeals([]))
-      .finally(() => setTopDealsLoading(false));
-  }, []);
 
   return (
     <>
@@ -171,26 +160,9 @@ function Home() {
         </div>
       </section>
 
-      {/* 3. TOP DEALS FEED */}
-      <section className="bg-[#FAFAFA] dark:bg-[#0B0B0C] py-20 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
-        <div className="max-w-2xl mx-auto px-6">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-60px" }}
-          >
-            <p className="text-[11px] font-bold text-[#2563EB] uppercase tracking-[0.18em] mb-3">
-              En este momento
-            </p>
-            <TopDeals opportunities={topDeals} isLoading={topDealsLoading} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 4. COMPARACIÓN EN VIVO */}
+      {/* 3. RESULTADO ACTUAL */}
       <section className="bg-white dark:bg-[#0B0B0C] py-24 border-t border-[#E2E8F0] dark:border-[#1F1F23]">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -198,14 +170,11 @@ function Home() {
             viewport={{ once: true, margin: "-60px" }}
             className="text-center mb-12"
           >
-            <p className="text-[11px] font-bold text-[#2563EB] uppercase tracking-[0.18em] mb-3">
-              Ejemplo real
-            </p>
             <h2 className="text-[28px] font-semibold tracking-[-0.01em] text-[#0F172A] dark:text-white">
-              Así se ve una comparación
+              Comparamos y decidimos por ti
             </h2>
-            <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-2">
-              KEF R3 Meta — encontrado en eBay · Near Mint
+            <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-2 max-w-xl mx-auto">
+              Landed compara el costo final de importar contra comprar local y resalta la opción que más conviene.
             </p>
           </motion.div>
 
@@ -214,104 +183,77 @@ function Home() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-1 md:grid-cols-[1fr_48px_1fr] items-stretch gap-0"
+            className="space-y-10"
           >
-            {/* ── IMPORTAR (winner) ─────────────────────────────── */}
             <motion.div
               variants={fadeUp}
-              className="relative p-6 rounded-2xl md:rounded-r-none bg-white dark:bg-[#111113] border-2 border-[#2563EB]/40 dark:border-[#2563EB]/30 shadow-[0_4px_32px_rgba(37,99,235,0.14)] flex flex-col gap-4"
+              className="overflow-hidden rounded-2xl border border-[#E2E8F0] dark:border-[#26262B] bg-white dark:bg-[#111113] shadow-[0_14px_36px_rgba(15,23,42,0.10)]"
             >
-              {/* Winner badge */}
-              <div className="absolute top-4 right-4 bg-[#2563EB] text-white text-[10px] font-bold px-2.5 py-1 rounded-lg tracking-wide shadow-sm">
-                Mejor opción
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">✓ Importar</p>
-                <p className="text-2xl font-semibold text-[#0F172A] dark:text-white tabular-nums tracking-[-0.01em] mt-1">
-                  $6.314.000 COP
-                </p>
-                <p className="text-xs text-[#94A3B8] mt-0.5">~$1.540 USD total</p>
-              </div>
-
-              {/* Breakdown */}
-              <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#64748B] dark:text-[#94A3B8]">Precio origen (eBay)</span>
-                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">$4.919.000</span>
+              <div className="grid grid-cols-1 md:grid-cols-[208px_1fr_256px]">
+                <div className="bg-[#F8FAFC] dark:bg-white/[0.03] p-4 flex items-center justify-center border-b md:border-b-0 md:border-r border-[#E2E8F0] dark:border-[#26262B]">
+                  <div className="h-44 w-44 rounded-2xl bg-white dark:bg-white/[0.04] border border-[#E2E8F0] dark:border-[#26262B] flex items-center justify-center">
+                    <span className="text-6xl opacity-60">🎧</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#64748B] dark:text-[#94A3B8]">Envío al casillero</span>
-                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">+$246.000</span>
+
+                <div className="p-6 flex flex-col justify-center gap-4">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight text-[#0F172A] dark:text-white">
+                      Producto de audio
+                    </h3>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-0.5">
+                      Comparación de costo final
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {["Precio del producto", "Envío internacional", "Impuestos incluidos"].map((label) => (
+                      <span
+                        key={label}
+                        className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#F1F5F9] dark:bg-white/[0.06] text-xs font-medium text-[#475569] dark:text-[#94A3B8]"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#64748B] dark:text-[#94A3B8]">Arancel + IVA</span>
-                  <span className="tabular-nums font-medium text-[#0F172A] dark:text-[#F5F5F7]">+$1.149.000</span>
+
+                <div className="bg-emerald-50 dark:bg-emerald-500/[0.06] border-t md:border-t-0 md:border-l border-emerald-200 dark:border-emerald-500/20 p-6 flex flex-col justify-center">
+                  <span className="self-start px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-[0.12em]">
+                    Mejor opción actual
+                  </span>
+                  <p className="mt-4 text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
+                    Conviene importar
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    Ahorro estimado: $410.000 COP
+                  </p>
                 </div>
               </div>
 
-              {/* Savings callout */}
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200 dark:border-emerald-500/20">
-                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  Ahorras $2.969.000 (32%) vs comprar local
-                </p>
+              <div className="grid grid-cols-[1fr_auto_1fr] border-t border-[#E2E8F0] dark:border-[#26262B] bg-[#F8FAFC] dark:bg-white/[0.02]">
+                <div className="py-4 px-4 sm:px-6 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#64748B] dark:text-[#94A3B8] mb-1">
+                    Mejor importado
+                  </p>
+                  <p className="text-lg font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                    $1.180.000 COP
+                  </p>
+                </div>
+                <div className="flex items-center justify-center px-3">
+                  <span className="w-9 h-9 rounded-full bg-white dark:bg-[#111113] border-2 border-[#E2E8F0] dark:border-[#26262B] flex items-center justify-center text-[11px] font-bold text-[#94A3B8]">
+                    VS
+                  </span>
+                </div>
+                <div className="py-4 px-4 sm:px-6 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#64748B] dark:text-[#94A3B8] mb-1">
+                    Mejor local
+                  </p>
+                  <p className="text-lg font-bold tabular-nums text-[#0F172A] dark:text-white">
+                    $1.590.000 COP
+                  </p>
+                </div>
               </div>
-
-              <p className="text-sm font-medium text-[#2563EB] dark:text-blue-400 -mb-1">
-                💡 Landed recomienda importar
-              </p>
-
-              <a
-                href="https://www.ebay.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.35)] active:scale-[0.97] transition-all duration-150"
-              >
-                Ver en eBay
-              </a>
-            </motion.div>
-
-            {/* ── VS divider ───────────────────────────────────── */}
-            <div className="hidden md:flex items-center justify-center">
-              <span className="text-[11px] font-black text-[#94A3B8] dark:text-[#3F3F46] uppercase tracking-[0.25em] select-none writing-mode-vertical rotate-0">
-                VS
-              </span>
-            </div>
-            <div className="flex md:hidden items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
-              <span className="text-[11px] font-black text-[#94A3B8] dark:text-[#3F3F46] uppercase tracking-[0.25em] select-none">VS</span>
-              <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#26262B]" />
-            </div>
-
-            {/* ── COMPRAR LOCAL (loser) ─────────────────────────── */}
-            <motion.div
-              variants={fadeUp}
-              className="p-6 rounded-2xl md:rounded-l-none bg-[#FAFAFA] dark:bg-[#0D0D0F] border border-[#E2E8F0] dark:border-[#26262B] opacity-90 flex flex-col gap-4"
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">Comprar en Colombia</p>
-                <p className="text-2xl font-semibold text-[#64748B] dark:text-[#71717A] tabular-nums tracking-[-0.01em] mt-1 line-through decoration-[#CBD5E1] dark:decoration-[#3F3F46]">
-                  $9.283.000 COP
-                </p>
-                <p className="text-xs text-[#94A3B8] mt-0.5">precio en tiendas locales</p>
-              </div>
-
-              <div className="space-y-2 text-sm text-[#64748B] dark:text-[#94A3B8]">
-                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Precio inflado por distribución e importación local</p>
-                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Menor disponibilidad de unidades</p>
-                <p className="flex items-start gap-2"><span className="text-[#CBD5E1] dark:text-[#3F3F46] mt-0.5">—</span>Menos opciones de condición y color</p>
-              </div>
-
-              <p className="text-sm font-medium text-[#94A3B8] dark:text-[#52525B] -mb-1">
-                ❌ No recomendado en este caso
-              </p>
-
-              <button
-                disabled
-                className="mt-auto w-full py-3 rounded-xl text-sm font-semibold bg-[#F1F5F9] dark:bg-white/[0.04] text-[#94A3B8] dark:text-[#52525B] cursor-not-allowed select-none"
-              >
-                Ver tiendas locales
-              </button>
             </motion.div>
           </motion.div>
         </div>
@@ -401,5 +343,3 @@ export default function Page() {
     </Suspense>
   );
 }
-
-

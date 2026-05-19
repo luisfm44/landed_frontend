@@ -139,8 +139,8 @@ export function TopImported({ offers, bestLocalPriceCop }: TopImportedProps) {
 
               {/* Product image */}
               {offer.imageUrl ? (
-                <div className="bg-[#F8FAFC] dark:bg-white/[0.02] flex items-center justify-center h-36 border-b border-[#F1F5F9] dark:border-[#26262B]">
-                  <div className="relative w-28 h-28">
+                <div className="bg-[#F8FAFC] dark:bg-white/[0.02] flex items-center justify-center h-52 sm:h-56 border-b border-[#F1F5F9] dark:border-[#26262B]">
+                  <div className="relative w-40 h-40 sm:w-44 sm:h-44">
                     <Image
                       src={offer.imageUrl}
                       alt={offer.title}
@@ -151,8 +151,8 @@ export function TopImported({ offers, bestLocalPriceCop }: TopImportedProps) {
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#F8FAFC] dark:bg-white/[0.02] h-36 flex items-center justify-center border-b border-[#F1F5F9] dark:border-[#26262B]">
-                  <span className="text-4xl opacity-30">🎵</span>
+                <div className="bg-[#F8FAFC] dark:bg-white/[0.02] h-52 sm:h-56 flex items-center justify-center border-b border-[#F1F5F9] dark:border-[#26262B]">
+                  <span className="text-6xl opacity-30">🎵</span>
                 </div>
               )}
 
