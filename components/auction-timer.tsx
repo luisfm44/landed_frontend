@@ -30,9 +30,13 @@ export function AuctionTimer({
 
   useEffect(() => {
     const calc = () => new Date(endsAt).getTime() - Date.now();
-    setTimeLeft(calc());
-    const interval = setInterval(() => setTimeLeft(calc()), 1000);
-    return () => clearInterval(interval);
+    const update = () => setTimeLeft(calc());
+    const timeout = setTimeout(update, 0);
+    const interval = setInterval(update, 1000);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, [endsAt]);
 
   // Render nothing until hydrated — avoids flicker and mismatch

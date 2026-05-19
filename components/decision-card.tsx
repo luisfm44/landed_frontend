@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Opportunity, DecisionType, ImportScenario, RichLocalOffer } from "@/types/opportunity";
+import { Opportunity, DecisionType, ImportScenario } from "@/types/opportunity";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { getTrustBadgeConfig, getSnapshotFreshnessHint } from "@/lib/trust";
 import {
@@ -102,34 +102,6 @@ function getRelevantScenario(
   return importScenarios.find((s) => s.method === method && s.available);
 }
 
-function buildFinalLine(
-  recommended: DecisionType,
-  savingsVsLocal: number | undefined,
-): string | null {
-  if (recommended === "import_direct") {
-    return savingsVsLocal && savingsVsLocal > 0
-      ? "Vale la pena importar directamente."
-      : "Importar directo es viable.";
-  }
-  if (recommended === "import_locker") {
-    return savingsVsLocal && savingsVsLocal > 0
-      ? "El ahorro cubre el costo del casillero."
-      : "Considera el costo del casillero antes de importar.";
-  }
-  if (recommended === "buy_local") {
-    return savingsVsLocal != null && savingsVsLocal < 0
-      ? `Importar costaría ${formatCop(Math.abs(savingsVsLocal))} más que comprarlo aquí.`
-      : "Mejor comprarlo en Colombia.";
-  }
-  if (recommended === "not_recommended") {
-    return "No se recomienda esta importación.";
-  }
-  if (recommended === "either") {
-    return "Tanto importar como comprar local es viable.";
-  }
-  return null;
-}
-
 function toSavingsPct(savings: number | undefined, referencePrice: number | undefined): number | null {
   if (savings == null || referencePrice == null || referencePrice <= 0) {
     return null;
@@ -209,23 +181,10 @@ function getSourceBadge(source: string): { label: string; className: string } {
   };
 }
 
-function getBestMarketOffer(
-  offers: NonNullable<Opportunity["decision"]["marketSnapshot"]>["offers"] | undefined,
-) {
-  if (!offers || offers.length === 0) return undefined;
-  return offers.reduce((lowest, current) => {
-    if (current.priceCop < lowest.priceCop) {
-      return current;
-    }
-    return lowest;
-  });
-}
-
 export function DecisionCard({ opportunity }: DecisionCardProps) {
   const { title, priceUsd, externalUrl, marketplace, decision, isTopDeal } = opportunity;
   const {
     recommended,
-    reason,
     importScenarios,
     bestLocal,
     bestLocalOffer,
@@ -249,7 +208,6 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
 
   const relevantScenario = getRelevantScenario(recommended, importScenarios);
 
-  const bestMarketOffer = getBestMarketOffer(marketSnapshot?.offers);
   const typicalComparisonPrice = marketSnapshot?.medianPrice ?? bestLocal?.priceCop;
 
   const computedSavingsVsLocal =
@@ -258,7 +216,6 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
       : savingsVsLocal;
 
   const savingsPct = toSavingsPct(computedSavingsVsLocal, typicalComparisonPrice);
-  const finalLine = buildFinalLine(recommended, computedSavingsVsLocal);
 
   // Top 3 offers — prefer localOffers list, fall back to marketSnapshot.offers
   const rawOffersForList: Array<{ source: string; priceCop: number; url?: string }> =
@@ -293,10 +250,6 @@ export function DecisionCard({ opportunity }: DecisionCardProps) {
     snapshotStatus,
     snapshotAgeMs ?? marketSnapshot?.snapshotAgeMs,
   );
-  const marketPremiumPct =
-    relevantScenario && typicalComparisonPrice != null && relevantScenario.totalCop > 0
-      ? ((typicalComparisonPrice - relevantScenario.totalCop) / relevantScenario.totalCop) * 100
-      : null;
 
   const marketplaceLabel = marketplace
     ? (MARKETPLACE_LABEL[marketplace.toLowerCase()] ?? marketplace)

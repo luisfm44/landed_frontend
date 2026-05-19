@@ -27,6 +27,12 @@ const DECISION_CONFIG: Record<
     className:
       "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
   },
+  either: {
+    label: "Importar directo o con casillero",
+    actionLabel: "Ver oferta",
+    className:
+      "bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20",
+  },
   buy_local: {
     label: "Comprar en Colombia",
     actionLabel: "Explorar de todos modos",
